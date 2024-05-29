@@ -1,0 +1,52 @@
+package com.ecritic.ecritic_users_service.core.usecase;
+
+import com.ecritic.ecritic_users_service.core.model.Country;
+import com.ecritic.ecritic_users_service.core.model.Role;
+import com.ecritic.ecritic_users_service.core.model.User;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBoundary;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByEmailBoundary;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
+import com.ecritic.ecritic_users_service.exception.EntityConflictException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import static java.util.Objects.nonNull;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CreateUserUseCase {
+
+    private final SaveUserBoundary saveUserBoundary;
+
+    private final FindUserByEmailBoundary findUserByEmailBoundary;
+
+    private final FindCountryByIdBoundary findCountryByIdBoundary;
+
+    private final BCryptPasswordEncoder bcrypt;
+
+    public User execute(User user) {
+        log.info("Creating user with name: [{}]", user.getName());
+
+        User isUserDuplicated = findUserByEmailBoundary.execute(user.getEmail());
+
+        if (nonNull(isUserDuplicated)) {
+            throw new EntityConflictException("User email already exists");
+        }
+
+        Country country = findCountryByIdBoundary.execute(user.getCountryId());
+        user.setCountry(country);
+
+        String encodedPassword = bcrypt.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+
+        user.setActive(true);
+        user.setRole(Role.DEFAULT);
+
+        User createdUser = saveUserBoundary.execute(user);
+
+        return createdUser;
+    }
+}
