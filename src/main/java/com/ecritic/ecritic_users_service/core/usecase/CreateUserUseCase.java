@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 import static java.util.Objects.nonNull;
 
 @Service
@@ -36,17 +38,15 @@ public class CreateUserUseCase {
             throw new EntityConflictException("User email already exists");
         }
 
-        Country country = findCountryByIdBoundary.execute(user.getCountryId());
-        user.setCountry(country);
-
+        Country country = findCountryByIdBoundary.execute(user.getCountry().getId());
         String encodedPassword = bcrypt.encode(user.getPassword());
-        user.setPassword(encodedPassword);
 
+        user.setId(UUID.randomUUID());
+        user.setCountry(country);
+        user.setPassword(encodedPassword);
         user.setActive(true);
         user.setRole(Role.DEFAULT);
 
-        User createdUser = saveUserBoundary.execute(user);
-
-        return createdUser;
+        return saveUserBoundary.execute(user);
     }
 }

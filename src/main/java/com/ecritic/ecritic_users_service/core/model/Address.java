@@ -7,16 +7,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.UUID;
-
-@Setter
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
-public class Country {
+public class Address {
 
-    private UUID id;
-    private String name;
+    private Long id;
+    private Country country;
+    private String uf;
+    private String city;
+    private String neighborhood;
+    private String street;
+    private String postalCode;
+    private String complement;
+    private boolean isDefault;
 }

@@ -8,6 +8,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,15 +19,16 @@ import java.time.LocalDateTime;
 @ToString
 public class User {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String email;
     private String password;
     private String description;
-    private boolean active = true;
-    private Role role = Role.DEFAULT;
+    private String phone;
     private Country country;
-    private transient Long countryId;
+    private List<Address> addresses;
+    private Role role = Role.DEFAULT;
+    private boolean active = true;
     private String passwordResetHash;
     private LocalDateTime passwordResetDate;
     private String emailResetHash;
