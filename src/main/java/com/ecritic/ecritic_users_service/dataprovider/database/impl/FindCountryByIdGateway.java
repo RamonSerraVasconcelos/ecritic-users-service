@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +18,7 @@ public class FindCountryByIdGateway implements FindCountryByIdBoundary {
 
     private final CountryEntityMapper countryEntityMapper;
 
-    public Country execute(UUID countryId) {
+    public Country execute(Long countryId) {
         log.info("Finding country with id: [{}]", countryId);
 
         return countryEntityRepository

@@ -4,7 +4,7 @@ server:
     include-stacktrace: never
 spring:
   datasource:
-    url: ${ECRITIC_DB_URL:jdbc:postgresql://localhost:5432/ecritic}
+    url: ${ECRITIC_DB_URL:jdbc:postgresql://localhost:5433/ecritic}
     username: ${ECRITIC_DB_USERNAME:root}
     password: ${ECRITIC_DB_PASSWORD:root}
   jpa:

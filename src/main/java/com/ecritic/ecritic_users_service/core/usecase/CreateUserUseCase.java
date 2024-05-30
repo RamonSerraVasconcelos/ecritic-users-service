@@ -32,21 +32,26 @@ public class CreateUserUseCase {
     public User execute(User user) {
         log.info("Creating user with name: [{}]", user.getName());
 
-        User isUserDuplicated = findUserByEmailBoundary.execute(user.getEmail());
+        try {
+            User isUserDuplicated = findUserByEmailBoundary.execute(user.getEmail());
 
-        if (nonNull(isUserDuplicated)) {
-            throw new EntityConflictException("User email already exists");
+            if (nonNull(isUserDuplicated)) {
+                throw new EntityConflictException("User email already exists");
+            }
+
+            Country country = findCountryByIdBoundary.execute(user.getCountry().getId());
+            String encodedPassword = bcrypt.encode(user.getPassword());
+
+            user.setId(UUID.randomUUID());
+            user.setCountry(country);
+            user.setPassword(encodedPassword);
+            user.setActive(true);
+            user.setRole(Role.DEFAULT);
+
+            return saveUserBoundary.execute(user);
+        } catch (Exception ex) {
+            log.error("Error creating user", ex);
+            throw ex;
         }
-
-        Country country = findCountryByIdBoundary.execute(user.getCountry().getId());
-        String encodedPassword = bcrypt.encode(user.getPassword());
-
-        user.setId(UUID.randomUUID());
-        user.setCountry(country);
-        user.setPassword(encodedPassword);
-        user.setActive(true);
-        user.setRole(Role.DEFAULT);
-
-        return saveUserBoundary.execute(user);
     }
 }

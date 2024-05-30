@@ -1,21 +1,19 @@
-package com.ecritic.ecritic_users_service.core.model;
+package com.ecritic.ecritic_users_service.entrypoint.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
-import java.util.UUID;
-
-@Setter
-@Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Builder
-@ToString
-public class Country {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CountryResponseDto {
 
     private Long id;
     private String name;

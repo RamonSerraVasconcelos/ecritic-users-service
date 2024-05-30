@@ -6,7 +6,7 @@ CREATE TABLE users
     password            TEXT NOT NULL,
     phone               TEXT,
     description         TEXT,
-    country_id          UUID,
+    country_id          INT,
     profile_picture_id  TEXT,
     role                TEXT,
     active              BOOLEAN,
@@ -22,7 +22,7 @@ CREATE TABLE users
 
 CREATE TABLE countries
 (
-    id   UUID NOT NULL,
+    id   BIGSERIAL NOT NULL,
     name TEXT,
     PRIMARY KEY (id)
 );
@@ -30,7 +30,7 @@ CREATE TABLE countries
 CREATE TABLE addresses
 (
     id           UUID       NOT NULL,
-    country_id   UUID       NOT NULL,
+    country_id   INT       NOT NULL,
     uf           CHAR(2)    NOT NULL,
     city         TEXT       NOT NULL,
     neighborhood TEXT       NOT NULL,
