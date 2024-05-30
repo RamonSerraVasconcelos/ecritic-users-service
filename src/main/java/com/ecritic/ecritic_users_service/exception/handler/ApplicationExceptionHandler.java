@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.exception.handler;
 import com.ecritic.ecritic_users_service.exception.BusinessViolationException;
 import com.ecritic.ecritic_users_service.exception.EntityConflictException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
+import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -30,6 +31,11 @@ public class ApplicationExceptionHandler {
 
     @ExceptionHandler(BusinessViolationException.class)
     public ResponseEntity<ErrorDetails> resourceViolationExceptionHandler(BusinessViolationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponseError(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ResourceViolationException.class)
+    public ResponseEntity<ErrorDetails> resourceViolationExceptionHandler(ResourceViolationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponseError(ex.getMessage()));
     }
 }

@@ -11,9 +11,4 @@ public class ECriticUsersServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ECriticUsersServiceApplication.class, args);
 	}
-
-	@Bean
-	public BCryptPasswordEncoder bCryptPasswordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
 }

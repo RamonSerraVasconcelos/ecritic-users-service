@@ -47,6 +47,8 @@ public class UserEntity {
 
     private String description;
 
+    private String phone;
+
     private boolean active = true;
 
     @Enumerated(EnumType.STRING)
