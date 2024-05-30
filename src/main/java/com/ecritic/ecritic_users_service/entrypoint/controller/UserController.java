@@ -6,11 +6,15 @@ import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.UserDtoMapper;
 import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +43,6 @@ public class UserController {
 
         User createdUser = createUserUseCase.execute(user);
 
-        return ResponseEntity.ok().body(userDtoMapper.userToUserResponseDto(createdUser));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userDtoMapper.userToUserResponseDto(createdUser));
     }
 }
