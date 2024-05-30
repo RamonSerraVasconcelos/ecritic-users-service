@@ -8,8 +8,6 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
 
-import java.time.Duration;
-
 @Configuration
 public class RedisConfig {
 
