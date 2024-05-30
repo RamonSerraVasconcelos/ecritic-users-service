@@ -12,9 +12,10 @@ spring:
   kafka:
     bootstrap-servers: ${ECRITIC_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     email-notification-topic: ${ECRITIC_KAFKA_EMAIL_NOTIFICATION_TOPIC:email-notification}
-  redis:
-    host: ${REDIS_HOST:127.0.0.1}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:af1ce60c0f7}
   error:
     include-stacktrace: never
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:af1ce60c0f7}
