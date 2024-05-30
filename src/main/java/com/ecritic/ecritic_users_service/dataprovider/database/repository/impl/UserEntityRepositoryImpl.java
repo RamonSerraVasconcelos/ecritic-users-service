@@ -18,6 +18,7 @@ public class UserEntityRepositoryImpl implements UserEntityCustomRepository {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     private static final String SELECT = "SELECT u.id, u.name, u.email, u.phone, u.description, u.country_id, u.role, u.active FROM users u";
+    private static final String SELECT_COUNT = "SELECT COUNT(u.id) FROM users u";
 
     @Override
     public List<UserEntity> findUserListByParams(UserFilter userFilter) {
@@ -33,7 +34,7 @@ public class UserEntityRepositoryImpl implements UserEntityCustomRepository {
 
     @Override
     public Long countUsersByParams(UserFilter userFilter) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(id) FROM users");
+        StringBuilder queryBuilder = new StringBuilder(SELECT_COUNT);
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         addConditions(userFilter, queryBuilder, params);
@@ -42,7 +43,7 @@ public class UserEntityRepositoryImpl implements UserEntityCustomRepository {
     }
 
     private void addConditions(UserFilter userFilter, StringBuilder queryBuilder, MapSqlParameterSource params) {
-        queryBuilder.append(" WHERE active = :active");
+        queryBuilder.append(" WHERE u.active = :active");
         params.addValue("active", userFilter.isActive());
 
         if (userFilter.getUserIds() != null && !userFilter.getUserIds().isEmpty()) {

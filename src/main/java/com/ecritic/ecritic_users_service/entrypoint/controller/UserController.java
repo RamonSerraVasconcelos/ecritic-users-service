@@ -91,10 +91,9 @@ public class UserController {
     public ResponseEntity<PageableUserResponse> findUsers(HttpServletRequest request,
                                                           Pageable pageable,
                                                           @RequestParam(name = "active", required = false, defaultValue = "true") boolean active,
-                                                          @RequestParam(name = "email", required = false) String name,
-                                                          @RequestParam(name = "name", required = false) String email,
-                                                          @RequestParam(name = "userIds", required = false) List<String> userIds) {
-
+                                                          @RequestParam(name = "userIds", required = false) List<String> userIds,
+                                                          @RequestParam(name = "name", required = false) String name,
+                                                          @RequestParam(name = "email", required = false) String email) {
 
         UserFilter userFilter = userFilterMapper.map(pageable, active, name, email, userIds);
 
