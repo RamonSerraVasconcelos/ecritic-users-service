@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.entrypoint.controller;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.UserFilter;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
@@ -46,6 +47,8 @@ public class UserController {
     private final UpdateUserUseCase updateUserUseCase;
 
     private final FindUsersUseCase findUsersUseCase;
+
+    private final FindUserByIdUseCase findUserByIdUseCase;
 
     private final UserDtoMapper userDtoMapper;
 
@@ -115,5 +118,17 @@ public class UserController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK).body(pageableUserResponse);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDto> findUserById(HttpServletRequest request, @PathVariable String id) {
+        String userId = request.getAttribute("userId").toString();
+
+        if (!Objects.equals(userId, id)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        User user = findUserByIdUseCase.execute(UUID.fromString(id));
+        return ResponseEntity.status(HttpStatus.OK).body(userDtoMapper.userToUserResponseDto(user));
     }
 }
