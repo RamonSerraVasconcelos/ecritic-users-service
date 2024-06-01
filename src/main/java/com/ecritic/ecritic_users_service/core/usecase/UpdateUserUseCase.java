@@ -4,6 +4,7 @@ import com.ecritic.ecritic_users_service.core.model.Country;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCache;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,8 @@ public class UpdateUserUseCase {
 
     private final FindCountryByIdBoundary findCountryByIdBoundary;
 
+    private final InvalidateUsersCache invalidateUsersCache;
+
     public User execute(UUID userId, User userRequest) {
         log.info("Updating user with id: [{}]", userRequest.getId());
 
@@ -42,6 +45,8 @@ public class UpdateUserUseCase {
             userToBeUpdated.setDescription(userRequest.getDescription());
             userToBeUpdated.setPhone(userRequest.getPhone());
             userToBeUpdated.setCountry(country);
+
+            invalidateUsersCache.execute();
 
             return saveUserBoundary.execute(userToBeUpdated);
         } catch (Exception ex) {
