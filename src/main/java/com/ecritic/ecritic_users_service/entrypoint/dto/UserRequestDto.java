@@ -31,7 +31,7 @@ public class UserRequestDto {
 
     private String description;
 
-    @Pattern(regexp = "^5548\\d{9}$", message = "Invalid phone number format")
+    @Pattern(regexp = "^\\d{13}$", message = "Invalid phone number format")
     private String phone;
 
     private String role;

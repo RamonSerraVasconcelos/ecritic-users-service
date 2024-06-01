@@ -83,6 +83,6 @@ public class ApplicationRequestFilter extends OncePerRequestFilter {
     }
 
     private void logRequest(HttpServletRequest request, RequestHeaders headers) {
-        log.info("Logging request INFO - URI: [{}], Headers: [{}]", request.getRequestURI(), headers.toString());
+        log.info("Request INFO - Method: [{}], URI: [{}], Headers: [{}]", request.getMethod(), request.getRequestURI(), headers.toString());
     }
 }
