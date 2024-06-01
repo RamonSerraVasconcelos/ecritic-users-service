@@ -1,6 +1,7 @@
 package com.ecritic.ecritic_users_service.dataprovider.cache.impl.user;
 
 import com.ecritic.ecritic_users_service.core.usecase.boundary.CacheUsersCountBoundary;
+import com.ecritic.ecritic_users_service.dataprovider.cache.CacheKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class CacheUsersCountGateway implements CacheUsersCountBoundary {
 
     @Override
     public void execute(Long count) {
-        String cacheKey = "users-count";
+        String cacheKey = CacheKeys.USERS_COUNT_KEY.getKey();
 
         log.info("Saving users count to redis cache with cacheKey: [{}]", cacheKey);
 

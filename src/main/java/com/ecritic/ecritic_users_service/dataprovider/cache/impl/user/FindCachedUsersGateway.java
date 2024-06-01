@@ -2,7 +2,7 @@ package com.ecritic.ecritic_users_service.dataprovider.cache.impl.user;
 
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCachedUsersBoundary;
-import com.ecritic.ecritic_users_service.dataprovider.cache.CachingUtils;
+import com.ecritic.ecritic_users_service.dataprovider.cache.CacheKeys;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class FindCachedUsersGateway implements FindCachedUsersBoundary {
 
     @Override
     public List<User> execute(Pageable pageable) {
-        String cacheKey = CachingUtils.buildPaginationCachekey("users", pageable.getPageNumber(), pageable.getPageSize());
+        String cacheKey = CacheKeys.USERS_KEY.buildKey(String.valueOf(pageable.getPageNumber()), String.valueOf(pageable.getPageSize()));
 
         log.info("Retrieving users from cache with key: {}", cacheKey);
 
@@ -37,7 +37,8 @@ public class FindCachedUsersGateway implements FindCachedUsersBoundary {
                 return List.of();
             }
 
-            return objectMapper.readValue(usersJson, new TypeReference<>() {});
+            return objectMapper.readValue(usersJson, new TypeReference<>() {
+            });
         } catch (Exception ex) {
             log.error("Error while retrieving users from cache: {}", ex.getMessage());
             return List.of();

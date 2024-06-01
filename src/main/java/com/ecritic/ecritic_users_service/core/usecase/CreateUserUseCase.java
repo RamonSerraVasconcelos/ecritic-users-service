@@ -5,7 +5,7 @@ import com.ecritic.ecritic_users_service.core.model.Role;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByEmailBoundary;
-import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCache;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCacheBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityConflictException;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class CreateUserUseCase {
 
     private final FindCountryByIdBoundary findCountryByIdBoundary;
 
-    private final InvalidateUsersCache invalidateUsersCache;
+    private final InvalidateUsersCacheBoundary invalidateUsersCacheBoundary;
 
     private final BCryptPasswordEncoder bcrypt;
 
@@ -51,7 +51,7 @@ public class CreateUserUseCase {
             user.setActive(true);
             user.setRole(Role.DEFAULT);
 
-            invalidateUsersCache.execute();
+            invalidateUsersCacheBoundary.execute();
 
             return saveUserBoundary.execute(user);
         } catch (Exception ex) {
