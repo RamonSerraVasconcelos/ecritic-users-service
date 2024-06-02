@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -24,50 +23,8 @@ public class ApplicationRequestFilter extends OncePerRequestFilter {
 
         response.setHeader("X-Request-Id", headers.getRequestId());
 
-        if (isEndpointOpen(request)) {
-            logRequest(request, headers);
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = request.getHeader("Authorization");
-
-        if (isNull(token)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        try {
-            String userId = TokenUtils.getUserIdFromToken(token);
-            String userRole = TokenUtils.getUserRoleFromToken(token);
-
-            request.setAttribute("userId", userId);
-            request.setAttribute("role", userRole);
-        } catch (Exception e) {
-            log.error("Error retrieving access token", e);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        } finally {
-            logRequest(request, headers);
-        }
-
+        logRequest(request, headers);
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isEndpointOpen(HttpServletRequest request) {
-        String excludeUrls = getFilterConfig().getInitParameter("excludeUrls");
-        String[] excludeUrlArray = excludeUrls.split(",");
-        AntPathMatcher pathMatcher = new AntPathMatcher();
-
-        for (String excludeUrl : excludeUrlArray) {
-            String trimmedExcludeUrl = excludeUrl.trim();
-
-            if (pathMatcher.match(trimmedExcludeUrl, request.getRequestURI())) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private RequestHeaders getHeaders(HttpServletRequest request) {
@@ -79,6 +36,7 @@ public class ApplicationRequestFilter extends OncePerRequestFilter {
 
         return RequestHeaders.builder()
                 .requestId(requestId)
+                .authorization(request.getHeader("Authorization"))
                 .build();
     }
 

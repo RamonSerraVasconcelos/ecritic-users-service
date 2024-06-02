@@ -12,4 +12,5 @@ import lombok.ToString;
 public class RequestHeaders {
 
     private String requestId;
+    private String authorization;
 }

@@ -14,6 +14,6 @@ public enum CacheKeys {
     private final String key;
 
     public String buildKey(String... replacements) {
-        return String.format(key, (Object) replacements);
+        return String.format(key, (Object[]) replacements);
     }
 }
