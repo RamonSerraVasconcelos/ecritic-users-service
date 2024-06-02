@@ -19,7 +19,6 @@ public class FilterConfig {
 
         registrationBean.setFilter(applicationRequestFilter);
         registrationBean.addUrlPatterns("*");
-        registrationBean.addInitParameter("excludeUrls", "/users,/forgot-password,/reset-password,/reset-email,/countries,/countries/*");
 
         return registrationBean;
     }

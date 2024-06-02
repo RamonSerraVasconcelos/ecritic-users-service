@@ -7,13 +7,14 @@ import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
+import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
 import com.ecritic.ecritic_users_service.entrypoint.dto.Metadata;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PageableUserResponse;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
+import com.ecritic.ecritic_users_service.entrypoint.mapper.AuthorizationTokenDataMapper;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.UserDtoMapper;
 import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,6 +55,8 @@ public class UserController {
 
     private final UserFilterMapper userFilterMapper;
 
+    private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
+
     @PostMapping
     public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto userRequestDto) {
         Set<ConstraintViolation<UserRequestDto>> violations = validator.validate(userRequestDto);
@@ -69,7 +72,10 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> editUser(HttpServletRequest request, @PathVariable String id, @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<UserResponseDto> editUser(@RequestHeader("Authorization") String authorization,
+                                                    @PathVariable UUID id,
+                                                    @RequestBody UserRequestDto userRequestDto) {
+
         Set<ConstraintViolation<UserRequestDto>> violations = validator.validate(userRequestDto);
         if (!violations.isEmpty()) {
             violations.forEach(violation -> {
@@ -79,20 +85,18 @@ public class UserController {
             });
         }
 
-        String userId = request.getAttribute("userId").toString();
-
-        if (!Objects.equals(userId, id)) {
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(id)) {
             throw new ResourceViolationException("Invalid request data");
         }
 
-        User user = updateUserUseCase.execute(UUID.fromString(id), userDtoMapper.userRequestDtoToUser(userRequestDto));
+        User user = updateUserUseCase.execute(id, userDtoMapper.userRequestDtoToUser(userRequestDto));
 
         return ResponseEntity.ok().body(userDtoMapper.userToUserResponseDto(user));
     }
 
     @GetMapping
-    public ResponseEntity<PageableUserResponse> findUsers(HttpServletRequest request,
-                                                          Pageable pageable,
+    public ResponseEntity<PageableUserResponse> findUsers(Pageable pageable,
                                                           @RequestParam(name = "active", required = false, defaultValue = "true") boolean active,
                                                           @RequestParam(name = "userIds", required = false) List<String> userIds,
                                                           @RequestParam(name = "name", required = false) String name,
@@ -121,14 +125,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> findUserById(HttpServletRequest request, @PathVariable String id) {
-        String userId = request.getAttribute("userId").toString();
+    public ResponseEntity<UserResponseDto> findUserById(@RequestHeader("Authorization") String authorization, @PathVariable UUID id) {
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
 
-        if (!Objects.equals(userId, id)) {
+        if (!authorizationTokenData.getUserId().equals(id)) {
             throw new ResourceViolationException("Invalid request data");
         }
 
-        User user = findUserByIdUseCase.execute(UUID.fromString(id));
+        User user = findUserByIdUseCase.execute(id);
         return ResponseEntity.status(HttpStatus.OK).body(userDtoMapper.userToUserResponseDto(user));
     }
 }
