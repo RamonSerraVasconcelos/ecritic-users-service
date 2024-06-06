@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,7 +18,7 @@ import lombok.ToString;
 @ToString
 public class Address {
 
-    private Long id;
+    private UUID id;
     private Country country;
     private String uf;
     private String city;
@@ -24,4 +27,6 @@ public class Address {
     private String postalCode;
     private String complement;
     private boolean isDefault;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
