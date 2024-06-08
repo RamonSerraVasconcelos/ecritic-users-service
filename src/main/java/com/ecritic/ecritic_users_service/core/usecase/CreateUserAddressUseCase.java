@@ -35,15 +35,15 @@ public class CreateUserAddressUseCase {
                 throw new EntityNotFoundException("User not found");
             }
 
-            Address savedAddress = createAddressUseCase.execute(address);
+            createAddressUseCase.execute(address);
+
+            saveUserAddressBoundary.execute(userId, address.getId());
 
             if (address.isDefault()) {
-                setDefaultUserAddressUseCase.execute(userId, savedAddress.getId());
+                setDefaultUserAddressUseCase.execute(userId, address.getId());
             }
 
-            saveUserAddressBoundary.execute(savedAddress.getId(), userId);
-
-            return savedAddress;
+            return address;
         } catch (Exception ex) {
             log.error("Error while adding address for user with id: [{}}", userId, ex);
             throw ex;

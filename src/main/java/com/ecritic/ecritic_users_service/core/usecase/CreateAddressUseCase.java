@@ -4,7 +4,6 @@ import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.model.Country;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveAddressBoundary;
-import com.ecritic.ecritic_users_service.exception.BusinessViolationException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +34,8 @@ public class CreateAddressUseCase {
         address.setId(UUID.randomUUID());
         address.setCreatedAt(LocalDateTime.now());
 
-        return saveAddressBoundary.execute(address);
+        saveAddressBoundary.execute(address);
+
+        return address;
     }
 }
