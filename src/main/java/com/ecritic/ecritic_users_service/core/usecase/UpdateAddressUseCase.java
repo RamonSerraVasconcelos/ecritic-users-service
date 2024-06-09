@@ -23,7 +23,7 @@ public class UpdateAddressUseCase extends AbstractAddressUseCase {
     }
 
     public Address execute(UUID addressId, Address address) {
-        log.info("Updating address with id: [{}}", address.getId());
+        log.info("Updating address with id: [{}}", addressId);
 
         try {
             validateCountry(address.getCountry().getId());
@@ -44,9 +44,9 @@ public class UpdateAddressUseCase extends AbstractAddressUseCase {
             addressToUpdate.setPostalCode(address.getPostalCode());
             addressToUpdate.setComplement(address.getComplement());
 
-            return upsertAddress(address);
+            return upsertAddress(addressToUpdate);
         } catch (Exception ex) {
-            log.error("Error while updating address with id: [{}}", address.getId(), ex);
+            log.error("Error while updating address with id: [{}}", addressId, ex);
             throw ex;
         }
     }

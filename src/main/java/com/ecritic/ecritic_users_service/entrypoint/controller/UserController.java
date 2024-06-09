@@ -7,6 +7,7 @@ import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AddressRequestDto;
@@ -57,6 +58,8 @@ public class UserController {
     private final FindUserByIdUseCase findUserByIdUseCase;
 
     private final CreateUserAddressUseCase createUserAddressUseCase;
+
+    private final UpdateUserAddressUseCase updateUserAddressUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -146,7 +149,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/address")
-    public ResponseEntity<AddressResponseDto> createUserAddress(//@RequestHeader("Authorization") String authorization,
+    public ResponseEntity<AddressResponseDto> createUserAddress(@RequestHeader("Authorization") String authorization,
                                                                 @PathVariable("userId") UUID userId,
                                                                 @RequestBody AddressRequestDto addressRequestDto) {
 
@@ -155,10 +158,10 @@ public class UserController {
             throw new ResourceViolationException(violations);
         }
 
-//        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
-//        if (!authorizationTokenData.getUserId().equals(userId)) {
-//            throw new ResourceViolationException("Invalid request data");
-//        }
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
 
         Address address = addressDtoMapper.addressRequestDtoToAddress(addressRequestDto);
 
@@ -167,5 +170,30 @@ public class UserController {
         AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(savedAddress);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(addressResponseDto);
+    }
+
+    @PutMapping("/{userId}/address/{addressId}")
+    public ResponseEntity<AddressResponseDto> updateUserAddress(@RequestHeader("Authorization") String authorization,
+                                                                @PathVariable("userId") UUID userId,
+                                                                @PathVariable("addressId") UUID addressId,
+                                                                @RequestBody AddressRequestDto addressRequestDto) {
+
+        Set<ConstraintViolation<AddressRequestDto>> violations = validator.validate(addressRequestDto);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        Address address = addressDtoMapper.addressRequestDtoToAddress(addressRequestDto);
+
+        Address updatedAddress = updateUserAddressUseCase.execute(userId, addressId, address);
+
+        AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(updatedAddress);
+
+        return ResponseEntity.status(HttpStatus.OK).body(addressResponseDto);
     }
 }

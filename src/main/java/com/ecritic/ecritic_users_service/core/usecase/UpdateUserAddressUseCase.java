@@ -3,7 +3,6 @@ package com.ecritic.ecritic_users_service.core.usecase;
 import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
-import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserAddressBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,18 +14,16 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CreateUserAddressUseCase {
+public class UpdateUserAddressUseCase {
 
     private final FindUserByIdBoundary findUserByIdBoundary;
 
-    private final CreateAddressUseCase createAddressUseCase;
-
-    private final SaveUserAddressBoundary saveUserAddressBoundary;
+    private final UpdateAddressUseCase updateAddressUseCase;
 
     private final SetDefaultUserAddressUseCase setDefaultUserAddressUseCase;
 
-    public Address execute(UUID userId, Address address) {
-        log.info("Adding address for user with id: [{}}", userId);
+    public Address execute(UUID userId, UUID addressId, Address address) {
+        log.info("Updating address for user with id: [{}] and addressId: [{}]", userId, addressId);
 
         try {
             Optional<User> optionalUser = findUserByIdBoundary.execute(userId);
@@ -35,18 +32,16 @@ public class CreateUserAddressUseCase {
                 throw new EntityNotFoundException("User not found");
             }
 
-            Address savedAddress = createAddressUseCase.execute(address);
+            Address updatedAddress = updateAddressUseCase.execute(addressId, address);
+            updatedAddress.setDefault(address.isDefault());
 
-            saveUserAddressBoundary.execute(userId, savedAddress.getId());
-            savedAddress.setDefault(address.isDefault());
-
-            if (savedAddress.isDefault()) {
-                setDefaultUserAddressUseCase.execute(userId, savedAddress.getId());
+            if (address.isDefault()) {
+                setDefaultUserAddressUseCase.execute(userId, updatedAddress.getId());
             }
 
-            return savedAddress;
+            return updatedAddress;
         } catch (Exception ex) {
-            log.error("Error while adding address for user with id: [{}}", userId, ex);
+            log.error("Error while updating address for user with id: [{}] and addressId: [{}]", userId, addressId, ex);
             throw ex;
         }
     }
