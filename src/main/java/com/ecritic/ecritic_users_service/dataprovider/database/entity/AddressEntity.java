@@ -39,6 +39,8 @@ public class AddressEntity {
     private String postalCode;
     private String complement;
 
+    private boolean isDefault;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

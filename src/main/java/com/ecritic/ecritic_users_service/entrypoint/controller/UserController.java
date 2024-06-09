@@ -5,6 +5,7 @@ import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.UserFilter;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
@@ -60,6 +61,8 @@ public class UserController {
     private final CreateUserAddressUseCase createUserAddressUseCase;
 
     private final UpdateUserAddressUseCase updateUserAddressUseCase;
+
+    private final FindUserAddressesUseCase findUserAddressesUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -195,5 +198,24 @@ public class UserController {
         AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(updatedAddress);
 
         return ResponseEntity.status(HttpStatus.OK).body(addressResponseDto);
+    }
+
+    @GetMapping("/{userId}/address")
+    public ResponseEntity<List<AddressResponseDto>> findUserAddresses(@RequestHeader("Authorization") String authorization,
+                                                                      @PathVariable("userId") UUID userId) {
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        List<Address> addresses = findUserAddressesUseCase.execute(userId);
+
+        List<AddressResponseDto> addressesResponseDto = addresses
+                .stream()
+                .map(addressDtoMapper::addressToAddressResponseDto)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.OK).body(addressesResponseDto);
     }
 }
