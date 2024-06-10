@@ -1,9 +1,9 @@
 package com.ecritic.ecritic_users_service.dataprovider.database.repository.impl;
 
 import com.ecritic.ecritic_users_service.dataprovider.database.entity.AddressEntity;
+import com.ecritic.ecritic_users_service.dataprovider.database.mapper.AddressEntityRowMapper;
 import com.ecritic.ecritic_users_service.dataprovider.database.repository.AddressEntityCustomRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -49,12 +49,12 @@ public class AddressEntityRepositoryImpl implements AddressEntityCustomRepositor
 
     @Override
     public List<AddressEntity> findUserAddressesByUserId(UUID userId) {
-        String query = "SELECT a.id, a.country_id, a.uf, a.city, a.neighborhood, a.street, a.postal_code, a.complement, ua.is_default FROM addresses a LEFT JOIN user_adresses ua ON a.id = ua.address_id WHERE ua.user_id = :userId ORDER BY a.created_at DESC";
+        String query = "SELECT a.id, c.id as country_id, c.name as country_name, a.uf, a.city, a.neighborhood, a.street, a.postal_code, a.complement, ua.is_default FROM addresses a LEFT JOIN user_adresses ua ON a.id = ua.address_id LEFT JOIN countries c ON a.country_id = c.id WHERE ua.user_id = :userId ORDER BY a.created_at DESC";
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("userId", userId);
 
 
-        return jdbcTemplate.query(query, params, new BeanPropertyRowMapper<>(AddressEntity.class));
+        return jdbcTemplate.query(query, params, new AddressEntityRowMapper());
     }
 
 }
