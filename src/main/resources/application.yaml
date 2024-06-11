@@ -10,12 +10,12 @@ spring:
   jpa:
     database: POSTGRESQL
   kafka:
-    bootstrap-servers: ${ECRITIC_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${ECRITIC_KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
     email-notification-topic: ${ECRITIC_KAFKA_EMAIL_NOTIFICATION_TOPIC:email-notification}
   error:
     include-stacktrace: never
   data:
     redis:
       host: ${REDIS_HOST:127.0.0.1}
-      port: ${REDIS_PORT:6379}
+      port: ${REDIS_PORT:6380}
       password: ${REDIS_PASSWORD:af1ce60c0f7}

@@ -1,17 +1,25 @@
 package com.ecritic.ecritic_users_service.entrypoint.controller;
 
+import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.UserFilter;
+import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
+import com.ecritic.ecritic_users_service.entrypoint.dto.AddressRequestDto;
+import com.ecritic.ecritic_users_service.entrypoint.dto.AddressResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
 import com.ecritic.ecritic_users_service.entrypoint.dto.Metadata;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PageableUserResponse;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
+import com.ecritic.ecritic_users_service.entrypoint.mapper.AddressDtoMapper;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.AuthorizationTokenDataMapper;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.UserDtoMapper;
 import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
@@ -51,11 +59,21 @@ public class UserController {
 
     private final FindUserByIdUseCase findUserByIdUseCase;
 
+    private final CreateUserAddressUseCase createUserAddressUseCase;
+
+    private final UpdateUserAddressUseCase updateUserAddressUseCase;
+
+    private final FindUserAddressesUseCase findUserAddressesUseCase;
+
+    private final FindUserAddresUseCase findUserAddresUseCase;
+
+    private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
+
     private final UserDtoMapper userDtoMapper;
 
     private final UserFilterMapper userFilterMapper;
 
-    private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
+    private final AddressDtoMapper addressDtoMapper;
 
     @PostMapping
     public ResponseEntity<UserResponseDto> registerUser(@RequestBody UserRequestDto userRequestDto) {
@@ -134,5 +152,90 @@ public class UserController {
 
         User user = findUserByIdUseCase.execute(id);
         return ResponseEntity.status(HttpStatus.OK).body(userDtoMapper.userToUserResponseDto(user));
+    }
+
+    @PostMapping("/{userId}/address")
+    public ResponseEntity<AddressResponseDto> createUserAddress(@RequestHeader("Authorization") String authorization,
+                                                                @PathVariable("userId") UUID userId,
+                                                                @RequestBody AddressRequestDto addressRequestDto) {
+
+        Set<ConstraintViolation<AddressRequestDto>> violations = validator.validate(addressRequestDto);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        Address address = addressDtoMapper.addressRequestDtoToAddress(addressRequestDto);
+
+        Address savedAddress = createUserAddressUseCase.execute(userId, address);
+
+        AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(savedAddress);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressResponseDto);
+    }
+
+    @PutMapping("/{userId}/address/{addressId}")
+    public ResponseEntity<AddressResponseDto> updateUserAddress(@RequestHeader("Authorization") String authorization,
+                                                                @PathVariable("userId") UUID userId,
+                                                                @PathVariable("addressId") UUID addressId,
+                                                                @RequestBody AddressRequestDto addressRequestDto) {
+
+        Set<ConstraintViolation<AddressRequestDto>> violations = validator.validate(addressRequestDto);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        Address address = addressDtoMapper.addressRequestDtoToAddress(addressRequestDto);
+
+        Address updatedAddress = updateUserAddressUseCase.execute(userId, addressId, address);
+
+        AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(updatedAddress);
+
+        return ResponseEntity.status(HttpStatus.OK).body(addressResponseDto);
+    }
+
+    @GetMapping("/{userId}/address")
+    public ResponseEntity<List<AddressResponseDto>> findUserAddresses(@RequestHeader("Authorization") String authorization,
+                                                                      @PathVariable("userId") UUID userId) {
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        List<Address> addresses = findUserAddressesUseCase.execute(userId);
+
+        List<AddressResponseDto> addressesResponseDto = addresses
+                .stream()
+                .map(addressDtoMapper::addressToAddressResponseDto)
+                .toList();
+
+        return ResponseEntity.status(HttpStatus.OK).body(addressesResponseDto);
+    }
+
+    @GetMapping("/{userId}/address/{addressId}")
+    public ResponseEntity<AddressResponseDto> getUserAddress(@RequestHeader("Authorization") String authorization,
+                                                             @PathVariable("userId") UUID userId,
+                                                             @PathVariable("addressId") UUID addressId) {
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        Address address = findUserAddresUseCase.execute(userId, addressId);
+
+        AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(address);
+
+        return ResponseEntity.status(HttpStatus.OK).body(addressResponseDto);
     }
 }

@@ -1,25 +1,24 @@
-package com.ecritic.ecritic_users_service.core.model;
+package com.ecritic.ecritic_users_service.entrypoint.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Builder
-@ToString
-public class Address {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class AddressResponseDto {
 
     private UUID id;
-    private Country country;
+    private CountryResponseDto country;
     private String uf;
     private String city;
     private String neighborhood;
@@ -27,6 +26,4 @@ public class Address {
     private String postalCode;
     private String complement;
     private boolean isDefault;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

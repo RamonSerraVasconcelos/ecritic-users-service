@@ -8,11 +8,13 @@ import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByEmailBo
 import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCacheBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityConflictException;
+import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.Objects.nonNull;
@@ -42,11 +44,15 @@ public class CreateUserUseCase {
                 throw new EntityConflictException("User email already exists");
             }
 
-            Country country = findCountryByIdBoundary.execute(user.getCountry().getId());
+            Optional<Country> country = findCountryByIdBoundary.execute(user.getCountry().getId());
+            if (country.isEmpty()) {
+                throw new EntityNotFoundException("Country not found");
+            }
+
             String encodedPassword = bcrypt.encode(user.getPassword());
 
             user.setId(UUID.randomUUID());
-            user.setCountry(country);
+            user.setCountry(country.get());
             user.setPassword(encodedPassword);
             user.setActive(true);
             user.setRole(Role.DEFAULT);

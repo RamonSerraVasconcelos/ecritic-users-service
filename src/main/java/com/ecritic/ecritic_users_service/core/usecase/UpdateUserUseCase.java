@@ -40,14 +40,17 @@ public class UpdateUserUseCase {
                 throw new EntityNotFoundException("User not found");
             }
 
-            Country country = findCountryByIdBoundary.execute(userRequest.getCountry().getId());
+            Optional<Country> country = findCountryByIdBoundary.execute(userRequest.getCountry().getId());
+            if (country.isEmpty()) {
+                throw new EntityNotFoundException("Country not found");
+            }
 
             User userToBeUpdated = userToBeUpdatedOptional.get();
 
             userToBeUpdated.setName(userRequest.getName());
             userToBeUpdated.setDescription(userRequest.getDescription());
             userToBeUpdated.setPhone(userRequest.getPhone());
-            userToBeUpdated.setCountry(country);
+            userToBeUpdated.setCountry(country.get());
 
             invalidateUsersCacheBoundary.execute();
             invalidateUserCacheBoundary.execute(userId);

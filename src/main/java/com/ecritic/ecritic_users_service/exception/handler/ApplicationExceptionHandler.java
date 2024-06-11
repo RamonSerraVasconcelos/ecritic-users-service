@@ -10,6 +10,7 @@ import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededExceptio
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -71,5 +72,11 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ErrorDetails> methodArgumentTypeMismatchExceptionHandler(MethodArgumentTypeMismatchException ex) {
         log.warn("Request INFO - Response returning violations found: [{}]", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponseError("Invalid request data"));
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorDetails> missingRequestHeaderExceptionHandler(MissingRequestHeaderException ex) {
+        log.warn("Request INFO - Response returning violations found: [{}]", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponseError(ex.getBody().getDetail()));
     }
 }
