@@ -5,6 +5,7 @@ import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.UserFilter;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
@@ -63,6 +64,8 @@ public class UserController {
     private final UpdateUserAddressUseCase updateUserAddressUseCase;
 
     private final FindUserAddressesUseCase findUserAddressesUseCase;
+
+    private final FindUserAddresUseCase findUserAddresUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -217,5 +220,22 @@ public class UserController {
                 .toList();
 
         return ResponseEntity.status(HttpStatus.OK).body(addressesResponseDto);
+    }
+
+    @GetMapping("/{userId}/address/{addressId}")
+    public ResponseEntity<AddressResponseDto> getUserAddress(//@RequestHeader("Authorization") String authorization,
+                                                             @PathVariable("userId") UUID userId,
+                                                             @PathVariable("addressId") UUID addressId) {
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        if (!authorizationTokenData.getUserId().equals(userId)) {
+            throw new ResourceViolationException("Invalid request data");
+        }
+
+        Address address = findUserAddresUseCase.execute(userId, addressId);
+
+        AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(address);
+
+        return ResponseEntity.status(HttpStatus.OK).body(addressResponseDto);
     }
 }

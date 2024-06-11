@@ -4,8 +4,11 @@ import com.ecritic.ecritic_users_service.dataprovider.database.entity.AddressEnt
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.AddressEntityRowMapper;
 import com.ecritic.ecritic_users_service.dataprovider.database.repository.AddressEntityCustomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -54,7 +57,17 @@ public class AddressEntityRepositoryImpl implements AddressEntityCustomRepositor
                 .addValue("userId", userId);
 
 
-        return jdbcTemplate.query(query, params, new AddressEntityRowMapper());
+        return jdbcTemplate.query(query, (SqlParameterSource) params, (RowMapper<AddressEntity>) new AddressEntityRowMapper());
     }
 
+    @Override
+    public AddressEntity findUserAddressByIds(UUID userId, UUID addressId) {
+        String query = "SELECT a.id, c.id as country_id, c.name as country_name, a.uf, a.city, a.neighborhood, a.street, a.postal_code, a.complement, ua.is_default FROM addresses a LEFT JOIN user_adresses ua ON a.id = ua.address_id LEFT JOIN countries c ON a.country_id = c.id WHERE ua.user_id = :userId AND a.id = :addressId ORDER BY a.created_at DESC";
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("addressId", addressId);
+
+
+        return jdbcTemplate.query(query, (SqlParameterSource) params, (ResultSetExtractor<AddressEntity>) new AddressEntityRowMapper());
+    }
 }

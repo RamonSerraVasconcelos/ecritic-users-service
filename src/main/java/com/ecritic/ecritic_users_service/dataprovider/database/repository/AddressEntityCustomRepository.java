@@ -14,4 +14,6 @@ public interface AddressEntityCustomRepository {
     void setUserDefaultAddress(UUID userId, UUID addressId);
 
     List<AddressEntity> findUserAddressesByUserId(UUID userId);
+
+    AddressEntity findUserAddressByIds(UUID userId, UUID addressId);
 }
