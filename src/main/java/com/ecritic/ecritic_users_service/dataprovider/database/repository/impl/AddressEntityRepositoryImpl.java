@@ -20,6 +20,8 @@ public class AddressEntityRepositoryImpl implements AddressEntityCustomRepositor
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
+    private static final String BASE_SELECT = "SELECT a.id, c.id as country_id, c.name as country_name, a.uf, a.city, a.neighborhood, a.street, a.postal_code, a.complement, ua.is_default FROM addresses a";
+
     @Override
     public void saveUserAddress(UUID userId, UUID addressId) {
         String query = "INSERT INTO user_adresses (user_id, address_id, is_default) VALUES (:userId, :addressId, false)";
@@ -52,17 +54,25 @@ public class AddressEntityRepositoryImpl implements AddressEntityCustomRepositor
 
     @Override
     public List<AddressEntity> findUserAddressesByUserId(UUID userId) {
-        String query = "SELECT a.id, c.id as country_id, c.name as country_name, a.uf, a.city, a.neighborhood, a.street, a.postal_code, a.complement, ua.is_default FROM addresses a LEFT JOIN user_adresses ua ON a.id = ua.address_id LEFT JOIN countries c ON a.country_id = c.id WHERE ua.user_id = :userId ORDER BY a.created_at DESC";
+        String query = BASE_SELECT +
+                " LEFT JOIN user_adresses ua ON a.id = ua.address_id" +
+                " LEFT JOIN countries c ON a.country_id = c.id" +
+                " WHERE ua.user_id = :userId " +
+                " ORDER BY a.created_at DESC";
+
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("userId", userId);
-
 
         return jdbcTemplate.query(query, (SqlParameterSource) params, (RowMapper<AddressEntity>) new AddressEntityRowMapper());
     }
 
     @Override
     public AddressEntity findUserAddressByIds(UUID userId, UUID addressId) {
-        String query = "SELECT a.id, c.id as country_id, c.name as country_name, a.uf, a.city, a.neighborhood, a.street, a.postal_code, a.complement, ua.is_default FROM addresses a LEFT JOIN user_adresses ua ON a.id = ua.address_id LEFT JOIN countries c ON a.country_id = c.id WHERE ua.user_id = :userId AND a.id = :addressId ORDER BY a.created_at DESC";
+        String query = BASE_SELECT +
+                " LEFT JOIN user_adresses ua ON a.id = ua.address_id" +
+                " LEFT JOIN countries c ON a.country_id = c.id" +
+                " WHERE ua.user_id = :userId AND a.id = :addressId";
+
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("userId", userId)
                 .addValue("addressId", addressId);

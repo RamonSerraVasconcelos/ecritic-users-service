@@ -223,7 +223,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/address/{addressId}")
-    public ResponseEntity<AddressResponseDto> getUserAddress(//@RequestHeader("Authorization") String authorization,
+    public ResponseEntity<AddressResponseDto> getUserAddress(@RequestHeader("Authorization") String authorization,
                                                              @PathVariable("userId") UUID userId,
                                                              @PathVariable("addressId") UUID addressId) {
 
