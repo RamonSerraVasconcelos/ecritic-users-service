@@ -8,6 +8,7 @@ import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUserCac
 import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCacheBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,12 +38,12 @@ public class UpdateUserUseCase {
             Optional<User> userToBeUpdatedOptional = findUserByIdBoundary.execute(userId);
 
             if(userToBeUpdatedOptional.isEmpty()) {
-                throw new EntityNotFoundException("User not found");
+                throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_09);
             }
 
             Optional<Country> country = findCountryByIdBoundary.execute(userRequest.getCountry().getId());
             if (country.isEmpty()) {
-                throw new EntityNotFoundException("Country not found");
+                throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_08);
             }
 
             User userToBeUpdated = userToBeUpdatedOptional.get();

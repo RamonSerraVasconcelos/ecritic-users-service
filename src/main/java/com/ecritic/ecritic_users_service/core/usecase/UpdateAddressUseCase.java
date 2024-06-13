@@ -5,6 +5,7 @@ import com.ecritic.ecritic_users_service.core.usecase.boundary.FindAddressByIdBo
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveAddressBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,7 @@ public class UpdateAddressUseCase extends AbstractAddressUseCase {
             Optional<Address> optionalAddress = findAddressByIdBoundary.execute(addressId);
 
             if (optionalAddress.isEmpty()) {
-                throw new EntityNotFoundException("Address not found");
+                throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_10);
             }
 
             Address addressToUpdate = optionalAddress.get();
