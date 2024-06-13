@@ -1,8 +1,23 @@
 package com.ecritic.ecritic_users_service.exception;
 
-public class UnauthorizedAccessException extends RuntimeException {
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponse;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 
-    public UnauthorizedAccessException(String message) {
-        super(message);
+public class UnauthorizedAccessException extends DefaultException {
+
+    public UnauthorizedAccessException(ErrorResponseCode errorResponseCode) {
+        super(ErrorResponse.builder()
+                .code(errorResponseCode.getCode())
+                .message(errorResponseCode.getMessage())
+                .detail(errorResponseCode.getDetail())
+                .build());
+    }
+
+    public UnauthorizedAccessException(ErrorResponseCode errorResponseCode, String exceptionDetail) {
+        super(ErrorResponse.builder()
+                .code(errorResponseCode.getCode())
+                .message(errorResponseCode.getMessage())
+                .detail(exceptionDetail)
+                .build());
     }
 }

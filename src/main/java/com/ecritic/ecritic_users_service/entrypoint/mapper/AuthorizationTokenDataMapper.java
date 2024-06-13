@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.entrypoint.mapper;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
 import com.ecritic.ecritic_users_service.entrypoint.validation.TokenUtils;
 import com.ecritic.ecritic_users_service.exception.UnauthorizedAccessException;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ public class AuthorizationTokenDataMapper {
 
     public AuthorizationTokenData map(String authorizationToken) {
         if (isNull(authorizationToken)) {
-            throw new UnauthorizedAccessException("Missing required header authorization token");
+            throw new UnauthorizedAccessException(ErrorResponseCode.ECRITICUSERS_02, "Missing authorization token");
         }
 
         try {
@@ -29,7 +30,7 @@ public class AuthorizationTokenDataMapper {
                     .build();
         } catch (Exception ex) {
             log.error("Error parsing access token", ex);
-            throw new UnauthorizedAccessException("Invalid authorization token");
+            throw new UnauthorizedAccessException(ErrorResponseCode.ECRITICUSERS_11);
         }
     }
 }

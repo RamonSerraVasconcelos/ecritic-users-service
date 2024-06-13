@@ -9,6 +9,7 @@ import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCa
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityConflictException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,12 +42,12 @@ public class CreateUserUseCase {
             User isUserDuplicated = findUserByEmailBoundary.execute(user.getEmail());
 
             if (nonNull(isUserDuplicated)) {
-                throw new EntityConflictException("User email already exists");
+                throw new EntityConflictException(ErrorResponseCode.ECRITICUSERS_07);
             }
 
             Optional<Country> country = findCountryByIdBoundary.execute(user.getCountry().getId());
             if (country.isEmpty()) {
-                throw new EntityNotFoundException("Country not found");
+                throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_08);
             }
 
             String encodedPassword = bcrypt.encode(user.getPassword());

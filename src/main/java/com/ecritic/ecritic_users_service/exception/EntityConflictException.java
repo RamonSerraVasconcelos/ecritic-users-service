@@ -1,8 +1,15 @@
 package com.ecritic.ecritic_users_service.exception;
 
-public class EntityConflictException extends RuntimeException {
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponse;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 
-    public EntityConflictException(String message) {
-        super(message);
+public class EntityConflictException extends DefaultException {
+
+    public EntityConflictException(ErrorResponseCode errorResponseCode) {
+        super(ErrorResponse.builder()
+                .code(errorResponseCode.getCode())
+                .message(errorResponseCode.getMessage())
+                .detail(errorResponseCode.getDetail())
+                .build());
     }
 }

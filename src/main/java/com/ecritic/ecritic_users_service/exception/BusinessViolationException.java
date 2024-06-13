@@ -1,8 +1,15 @@
 package com.ecritic.ecritic_users_service.exception;
 
-public class BusinessViolationException extends RuntimeException {
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponse;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 
-    public BusinessViolationException(String message) {
-        super(message);
+public class BusinessViolationException extends DefaultException {
+
+    public BusinessViolationException(ErrorResponseCode errorResponseCode) {
+        super(ErrorResponse.builder()
+                .code(errorResponseCode.getCode())
+                .message(errorResponseCode.getMessage())
+                .detail(errorResponseCode.getDetail())
+                .build());
     }
 }

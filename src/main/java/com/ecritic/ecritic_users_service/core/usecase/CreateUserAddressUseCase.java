@@ -5,6 +5,7 @@ import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserAddressBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class CreateUserAddressUseCase {
             Optional<User> optionalUser = findUserByIdBoundary.execute(userId);
 
             if (optionalUser.isEmpty()) {
-                throw new EntityNotFoundException("User not found");
+                throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_09);
             }
 
             Address savedAddress = createAddressUseCase.execute(address);

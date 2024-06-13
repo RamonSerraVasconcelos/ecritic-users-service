@@ -5,6 +5,7 @@ import com.ecritic.ecritic_users_service.core.model.Country;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveAddressBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.AllArgsConstructor;
 
 import java.util.Optional;
@@ -20,7 +21,7 @@ public abstract class AbstractAddressUseCase {
         Optional<Country> optionalCountry = findCountryByIdBoundary.execute(countryId);
 
         if (optionalCountry.isEmpty()) {
-            throw new EntityNotFoundException("Invalid country");
+            throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_08);
         }
     }
 

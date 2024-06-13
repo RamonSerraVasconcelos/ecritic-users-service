@@ -1,8 +1,15 @@
 package com.ecritic.ecritic_users_service.exception;
 
-public class EntityNotFoundException extends RuntimeException {
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponse;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 
-    public EntityNotFoundException(String message) {
-        super(message);
+public class EntityNotFoundException extends DefaultException {
+
+    public EntityNotFoundException(ErrorResponseCode errorResponseCode) {
+        super(ErrorResponse.builder()
+                .code(errorResponseCode.getCode())
+                .message(errorResponseCode.getMessage())
+                .detail(errorResponseCode.getDetail())
+                .build());
     }
 }
