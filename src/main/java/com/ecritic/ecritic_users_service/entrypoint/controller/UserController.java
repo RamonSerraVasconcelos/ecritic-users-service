@@ -5,6 +5,8 @@ import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.UserFilter;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.EmailResetRequestUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.EmailResetUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
@@ -44,6 +46,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -66,6 +70,10 @@ public class UserController {
     private final FindUserAddressesUseCase findUserAddressesUseCase;
 
     private final FindUserAddresUseCase findUserAddresUseCase;
+
+    private final EmailResetRequestUseCase emailResetRequestUseCase;
+
+    private final EmailResetUseCase emailResetUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -238,4 +246,18 @@ public class UserController {
 
         return ResponseEntity.status(HttpStatus.OK).body(addressResponseDto);
     }
+
+    @PostMapping("/request-email-change")
+    public ResponseEntity<Void> requestEmailChange(@RequestHeader("Authorization") String authorization, @RequestBody UserRequestDto userDto) {
+        if (isNull(userDto.getEmail())) {
+            throw new ResourceViolationException("Email is required");
+        }
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+
+        emailResetRequestUseCase.execute(authorizationTokenData.getUserId(), userDto.getEmail());
+
+        return ResponseEntity.noContent().build();
+    }
 }
+

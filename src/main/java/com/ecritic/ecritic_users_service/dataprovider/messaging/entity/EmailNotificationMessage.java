@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -13,7 +15,7 @@ import lombok.Setter;
 @Builder
 public class EmailNotificationMessage {
 
-    private Long userId;
+    private UUID userId;
     private String notificationSubjectId;
     private String email;
     private String subject;

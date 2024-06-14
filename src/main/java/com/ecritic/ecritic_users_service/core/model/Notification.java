@@ -6,13 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 public class Notification {
 
-    protected Long userId;
+    protected UUID userId;
     protected NotificationContentEnum notificationContentEnum;
     protected String body;
 }

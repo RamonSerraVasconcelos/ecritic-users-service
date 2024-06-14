@@ -17,7 +17,8 @@ public enum ErrorResponseCode {
     ECRITICUSERS_08("ECRITICUSERS-08", "Country not found", "The requested country was not found"),
     ECRITICUSERS_09("ECRITICUSERS-09", "User not found", "The requested user was not found"),
     ECRITICUSERS_10("ECRITICUSERS-10", "Address not found", "The requested address was not found"),
-    ECRITICUSERS_11("ECRITICUSERS-11", "Unauthorized", "Invalid authorization token");
+    ECRITICUSERS_11("ECRITICUSERS-11", "Unauthorized", "Invalid authorization token"),
+    ECRITICUSERS_12("ECRITICUSERS-12", "Invalid email", "New email must be different from the current one");
 
     private final String code;
     private final String message;
