@@ -259,5 +259,12 @@ public class UserController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping(path = "/{userId}/change-email")
+    public ResponseEntity<Void> emailReset(@PathVariable("userId") UUID userId, @RequestParam("token") String emailResetHash) {
+        emailResetUseCase.execute(userId, emailResetHash);
+
+        return ResponseEntity.noContent().build();
+    }
 }
 

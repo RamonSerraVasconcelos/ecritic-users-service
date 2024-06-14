@@ -18,8 +18,7 @@ public class EmailNotificationProducer {
     private KafkaProperties kafkaProperties;
 
     public void execute(EmailNotificationMessage emailNotificationMessage) {
-        log.info("Sending email notification message with subjectId: [{}] and userId: [{}]", emailNotificationMessage.getNotificationSubjectId(),
-                emailNotificationMessage.getUserId());
+        log.info("Sending message to topic: [{}]", kafkaProperties.getEmailNotificationTopic());
 
         try {
             kafkaTemplate.send(kafkaProperties.getEmailNotificationTopic(), emailNotificationMessage);

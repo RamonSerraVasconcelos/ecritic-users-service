@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -44,6 +45,12 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<ErrorResponse> missingRequestHeaderExceptionHandler(MissingRequestHeaderException ex) {
         log.warn("Request INFO - Response returning violations found: [{}]", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponseError(ErrorResponseCode.ECRITICUSERS_02, ex.getMessage()));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> missingServletRequestParameterExceptionHandler(MissingServletRequestParameterException ex) {
+        log.warn("Request INFO - Response returning violations found: [{}]", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(buildResponseError(ErrorResponseCode.ECRITICUSERS_01, ex.getMessage()));
     }
 
     @ExceptionHandler(ResourceViolationException.class)
