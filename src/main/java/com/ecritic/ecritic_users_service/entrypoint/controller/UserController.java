@@ -11,6 +11,7 @@ import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.PasswordResetRequestUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
@@ -74,6 +75,8 @@ public class UserController {
     private final EmailResetRequestUseCase emailResetRequestUseCase;
 
     private final EmailResetUseCase emailResetUseCase;
+
+    private final PasswordResetRequestUseCase passwordResetRequestUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -263,6 +266,17 @@ public class UserController {
     @PostMapping(path = "/{userId}/change-email")
     public ResponseEntity<Void> emailReset(@PathVariable("userId") UUID userId, @RequestParam("token") String emailResetHash) {
         emailResetUseCase.execute(userId, emailResetHash);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(path = "/forgot-password")
+    public ResponseEntity<Void> passwordResetRequest(@RequestBody UserRequestDto userRequestDto) {
+        if (isNull(userRequestDto.getEmail())) {
+            throw new ResourceViolationException("Email is required");
+        }
+
+        passwordResetRequestUseCase.execute(userRequestDto.getEmail());
 
         return ResponseEntity.noContent().build();
     }
