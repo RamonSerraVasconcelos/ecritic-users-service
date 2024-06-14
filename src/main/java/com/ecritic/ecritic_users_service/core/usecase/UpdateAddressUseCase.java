@@ -4,6 +4,7 @@ import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindAddressByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveAddressBoundary;
+import com.ecritic.ecritic_users_service.exception.DefaultException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,9 @@ public class UpdateAddressUseCase extends AbstractAddressUseCase {
             addressToUpdate.setComplement(address.getComplement());
 
             return upsertAddress(addressToUpdate);
+        } catch(DefaultException ex) {
+            log.error("Error while updating address with id: [{}]. Exception: [{}]", addressId, ex.getErrorResponse());
+            throw ex;
         } catch (Exception ex) {
             log.error("Error while updating address with id: [{}}", addressId, ex);
             throw ex;

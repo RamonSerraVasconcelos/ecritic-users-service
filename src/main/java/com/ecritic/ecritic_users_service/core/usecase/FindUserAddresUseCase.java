@@ -2,6 +2,7 @@ package com.ecritic.ecritic_users_service.core.usecase;
 
 import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserAddressByIdBoundary;
+import com.ecritic.ecritic_users_service.exception.DefaultException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,9 @@ public class FindUserAddresUseCase {
             }
 
             return optionalAddress.get();
+        } catch (DefaultException ex) {
+            log.error("Error finding address for user with id: [{}] and addrressId: [{}]. Exception: [{}]", userId, addressId, ex.getErrorResponse());
+            throw ex;
         } catch (Exception ex) {
             log.error("Error finding address for user with id: [{}] and addressId: [{}]", userId, addressId, ex);
             throw ex;

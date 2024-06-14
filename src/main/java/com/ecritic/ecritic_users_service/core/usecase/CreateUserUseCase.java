@@ -7,6 +7,7 @@ import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBo
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByEmailBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCacheBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
+import com.ecritic.ecritic_users_service.exception.DefaultException;
 import com.ecritic.ecritic_users_service.exception.EntityConflictException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
@@ -61,6 +62,9 @@ public class CreateUserUseCase {
             invalidateUsersCacheBoundary.execute();
 
             return saveUserBoundary.execute(user);
+        } catch (DefaultException ex) {
+          log.error("Error creating user. Exception: [{}]", ex.getErrorResponse());
+          throw ex;
         } catch (Exception ex) {
             log.error("Error creating user", ex);
             throw ex;
