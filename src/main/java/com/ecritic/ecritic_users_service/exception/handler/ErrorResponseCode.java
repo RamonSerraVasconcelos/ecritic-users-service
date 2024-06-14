@@ -18,7 +18,9 @@ public enum ErrorResponseCode {
     ECRITICUSERS_09("ECRITICUSERS-09", "User not found", "The requested user was not found"),
     ECRITICUSERS_10("ECRITICUSERS-10", "Address not found", "The requested address was not found"),
     ECRITICUSERS_11("ECRITICUSERS-11", "Unauthorized", "Invalid authorization token"),
-    ECRITICUSERS_12("ECRITICUSERS-12", "Invalid email", "New email must be different from the current one");
+    ECRITICUSERS_12("ECRITICUSERS-12", "Invalid email", "New email must be different from the current one"),
+    ECRITICUSERS_13("ECRITICUSERS-13", "Invalid password", "The new password cannot be equal to the old one"),
+    ECRITICUSERS_14("ECRITICUSERS-14", "Invalid password", "Password confirmation does not match");
 
     private final String code;
     private final String message;
