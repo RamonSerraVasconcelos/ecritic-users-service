@@ -17,7 +17,6 @@ public class AddressFixture {
                 .street("Avenida Brigadeiro Faria Lima")
                 .postalCode("04538-000")
                 .complement("Casa")
-                .isDefault(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
