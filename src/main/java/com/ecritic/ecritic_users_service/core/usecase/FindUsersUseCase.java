@@ -5,6 +5,7 @@ import com.ecritic.ecritic_users_service.core.model.UserFilter;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.CacheUsersBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCachedUsersBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUsersByParamsBoundary;
+import com.ecritic.ecritic_users_service.exception.DefaultException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,9 @@ public class FindUsersUseCase {
             }
 
             return pageUsers;
+        } catch (DefaultException ex) {
+            log.error("Error finding users. Exception: [{}]", ex.getErrorResponse());
+            throw ex;
         } catch (Exception ex) {
             log.error("Error finding users", ex);
             throw ex;

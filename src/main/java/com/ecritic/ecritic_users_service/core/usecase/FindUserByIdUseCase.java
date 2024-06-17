@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.core.usecase;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCachedUserBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
+import com.ecritic.ecritic_users_service.exception.DefaultException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,9 @@ public class FindUserByIdUseCase {
             }
 
             return optionalUser.get();
+        } catch (DefaultException ex) {
+            log.error("Error finding user by id. Exception: [{}]", ex.getErrorResponse());
+            throw ex;
         } catch (Exception ex) {
             log.error("Error finding user by id", ex);
             throw ex;

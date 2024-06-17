@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.core.usecase;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.enums.NotificationContentEnum;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
+import com.ecritic.ecritic_users_service.exception.DefaultException;
 import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,9 @@ public class EmailResetUseCase {
             log.info("Finished replacing email: [{}] for user with id: [{}]", user.getEmail(), user.getId());
 
             sendEmailNotificationUseCase.execute(user.getId(), user.getEmail(), NotificationContentEnum.EMAIL_RESET, null);
+        } catch (DefaultException ex) {
+          log.error("Error when changing email for user with id: [{}]. Exception: [{}]", userId, ex.getErrorResponse());
+          throw ex;
         } catch (Exception e) {
             log.error("Error when changing email for user with id: [{}]", userId, e);
             throw new ResourceViolationException("Invalid request data");

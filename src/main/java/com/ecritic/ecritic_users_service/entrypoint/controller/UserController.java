@@ -11,6 +11,8 @@ import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.PasswordResetRequestUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.PasswordResetUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
@@ -19,6 +21,7 @@ import com.ecritic.ecritic_users_service.entrypoint.dto.AddressResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
 import com.ecritic.ecritic_users_service.entrypoint.dto.Metadata;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PageableUserResponse;
+import com.ecritic.ecritic_users_service.entrypoint.dto.PasswordResetDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.AddressDtoMapper;
@@ -33,6 +36,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -74,6 +78,10 @@ public class UserController {
     private final EmailResetRequestUseCase emailResetRequestUseCase;
 
     private final EmailResetUseCase emailResetUseCase;
+
+    private final PasswordResetRequestUseCase passwordResetRequestUseCase;
+
+    private final PasswordResetUseCase passwordResetUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -260,9 +268,35 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping(path = "/{userId}/change-email")
+    @PatchMapping(path = "/{userId}/change-email")
     public ResponseEntity<Void> emailReset(@PathVariable("userId") UUID userId, @RequestParam("token") String emailResetHash) {
         emailResetUseCase.execute(userId, emailResetHash);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(path = "/forgot-password")
+    public ResponseEntity<Void> passwordResetRequest(@RequestBody UserRequestDto userRequestDto) {
+        if (isNull(userRequestDto.getEmail())) {
+            throw new ResourceViolationException("Email is required");
+        }
+
+        passwordResetRequestUseCase.execute(userRequestDto.getEmail());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(path = "/{userId}/reset-password")
+    public ResponseEntity<Void> passwordReset(@PathVariable("userId") UUID userId, @RequestBody PasswordResetDto passwordResetData) {
+        Set<ConstraintViolation<PasswordResetDto>> violations = validator.validate(passwordResetData);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        passwordResetUseCase.execute(userId,
+                passwordResetData.getPasswordResetHash(),
+                passwordResetData.getPassword(),
+                passwordResetData.getPasswordConfirmation());
 
         return ResponseEntity.noContent().build();
     }

@@ -4,6 +4,7 @@ import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserAddressBoundary;
+import com.ecritic.ecritic_users_service.exception.DefaultException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
 import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,9 @@ public class CreateUserAddressUseCase {
             }
 
             return savedAddress;
+        } catch (DefaultException ex) {
+            log.error("Error while adding address for user with id: [{}}, Exception: [{}]", userId, ex.getErrorResponse());
+            throw ex;
         } catch (Exception ex) {
             log.error("Error while adding address for user with id: [{}}", userId, ex);
             throw ex;
