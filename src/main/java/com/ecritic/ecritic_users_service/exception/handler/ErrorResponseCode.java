@@ -20,7 +20,8 @@ public enum ErrorResponseCode {
     ECRITICUSERS_11("ECRITICUSERS-11", "Unauthorized", "Invalid authorization token"),
     ECRITICUSERS_12("ECRITICUSERS-12", "Invalid email", "New email must be different from the current one"),
     ECRITICUSERS_13("ECRITICUSERS-13", "Invalid password", "The new password cannot be equal to the old one"),
-    ECRITICUSERS_14("ECRITICUSERS-14", "Invalid password", "Password confirmation does not match");
+    ECRITICUSERS_14("ECRITICUSERS-14", "Invalid password", "Password confirmation does not match"),
+    ECRITICUSERS_15("ECRITICUSERS-15", "Invalid password", "Invalid password");
 
     private final String code;
     private final String message;

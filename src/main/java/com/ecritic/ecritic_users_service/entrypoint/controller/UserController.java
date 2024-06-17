@@ -11,6 +11,7 @@ import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.PasswordChangeUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.PasswordResetRequestUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.PasswordResetUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
@@ -19,6 +20,7 @@ import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilter
 import com.ecritic.ecritic_users_service.entrypoint.dto.AddressRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AddressResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
+import com.ecritic.ecritic_users_service.entrypoint.dto.ChangePasswordDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.Metadata;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PageableUserResponse;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PasswordResetDto;
@@ -82,6 +84,8 @@ public class UserController {
     private final PasswordResetRequestUseCase passwordResetRequestUseCase;
 
     private final PasswordResetUseCase passwordResetUseCase;
+
+    private final PasswordChangeUseCase passwordChangeUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -297,6 +301,21 @@ public class UserController {
                 passwordResetData.getPasswordResetHash(),
                 passwordResetData.getPassword(),
                 passwordResetData.getPasswordConfirmation());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{userId}/change-password")
+    public ResponseEntity<Void> changePassword(@RequestHeader("Authorization") String authorization,
+                                               @PathVariable("userId") UUID userId,
+                                               @RequestBody ChangePasswordDto changePasswordDto) {
+
+        Set<ConstraintViolation<ChangePasswordDto>> violations = validator.validate(changePasswordDto);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        passwordChangeUseCase.execute(userId, changePasswordDto.getCurrentPassword(), changePasswordDto.getNewPassword(), changePasswordDto.getPasswordConfirmation());
 
         return ResponseEntity.noContent().build();
     }
