@@ -7,7 +7,7 @@ import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.EmailResetRequestUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.EmailResetUseCase;
-import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
@@ -75,7 +75,7 @@ public class UserController {
 
     private final FindUserAddressesUseCase findUserAddressesUseCase;
 
-    private final FindUserAddresUseCase findUserAddresUseCase;
+    private final FindUserAddressUseCase findUserAddressUseCase;
 
     private final EmailResetRequestUseCase emailResetRequestUseCase;
 
@@ -252,7 +252,7 @@ public class UserController {
             throw new ResourceViolationException("Invalid request data");
         }
 
-        Address address = findUserAddresUseCase.execute(userId, addressId);
+        Address address = findUserAddressUseCase.execute(userId, addressId);
 
         AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(address);
 
