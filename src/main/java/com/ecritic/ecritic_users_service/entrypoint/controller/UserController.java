@@ -100,7 +100,7 @@ public class UserController {
 
         User user = userDtoMapper.userRequestDtoToUser(userRequestDto);
 
-        User createdUser = createUserUseCase.execute(user);
+        User createdUser = createUserUseCase.execute(user, userRequestDto.getPasswordConfirmation());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userDtoMapper.userToUserResponseDto(createdUser));
     }

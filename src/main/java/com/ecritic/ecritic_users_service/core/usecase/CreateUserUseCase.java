@@ -7,6 +7,7 @@ import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCountryByIdBo
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByEmailBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCacheBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
+import com.ecritic.ecritic_users_service.exception.BusinessViolationException;
 import com.ecritic.ecritic_users_service.exception.DefaultException;
 import com.ecritic.ecritic_users_service.exception.EntityConflictException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
@@ -36,10 +37,15 @@ public class CreateUserUseCase {
 
     private final BCryptPasswordEncoder bcrypt;
 
-    public User execute(User user) {
+    public User execute(User user, String passwordConfirmation) {
         log.info("Creating user with name: [{}]", user.getName());
 
         try {
+            if (!passwordConfirmation.equals(user.getPassword())) {
+                log.warn("Passwords do not match");
+                throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_14);
+            }
+
             User isUserDuplicated = findUserByEmailBoundary.execute(user.getEmail());
 
             if (nonNull(isUserDuplicated)) {
