@@ -29,6 +29,10 @@ public class UserRequestDto {
     @Length(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
+    @NotBlank(message = "Password confirmation is required")
+    @Length(min = 8, message = "Password must be at least 8 characters long")
+    private String passwordConfirmation;
+
     private String description;
 
     @Pattern(regexp = "^\\d{13}$", message = "Invalid phone number format")
