@@ -52,7 +52,7 @@ public class UserEntity {
     private boolean active = true;
 
     @Enumerated(EnumType.STRING)
-    private Role role = Role.DEFAULT;
+    private RoleEntity role;
 
     @ManyToOne
     @JoinColumn(name = "country_id")
