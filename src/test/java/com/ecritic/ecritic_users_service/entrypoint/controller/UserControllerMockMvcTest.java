@@ -2,7 +2,6 @@ package com.ecritic.ecritic_users_service.entrypoint.controller;
 
 import com.ecritic.ecritic_users_service.core.fixture.UserFixture;
 import com.ecritic.ecritic_users_service.core.model.User;
-import com.ecritic.ecritic_users_service.core.model.UserFilter;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.EmailResetRequestUseCase;
@@ -18,9 +17,13 @@ import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
+import com.ecritic.ecritic_users_service.entrypoint.dto.ChangePasswordDto;
+import com.ecritic.ecritic_users_service.entrypoint.dto.PasswordResetDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.AuthorizationTokenDataFixture;
+import com.ecritic.ecritic_users_service.entrypoint.fixture.ChangePasswordDtoFixture;
+import com.ecritic.ecritic_users_service.entrypoint.fixture.PasswordResetDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.UserRequestDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.UserResponseDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.AddressDtoMapper;
@@ -277,5 +280,64 @@ class UserControllerMockMvcTest {
                 .andExpect(status().isNoContent());
 
         verify(emailResetUseCase).execute(any(UUID.class), any(String.class));
+    }
+
+    @Test
+    void givenRequestToForgotPasswordEndpoint_thenReturnResponseNoContent() throws Exception {
+        UserRequestDto userRequestDto = UserRequestDto.builder()
+                .email("jI8eU@example.com")
+                .build();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/users/forgot-password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent());
+
+        verify(passwordResetRequestUseCase).execute(any(String.class));
+    }
+
+    @Test
+    void givenRequestToResetPasswordEndpoint_thenResetPassword_andReturnNoContent() throws Exception {
+        PasswordResetDto passwordResetDto = PasswordResetDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(passwordResetDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .patch("/users/{userId}/reset-password", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent());
+
+        verify(passwordResetUseCase).execute(any(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void givenRequestToChangePasswordEndpoint_thenChangePassword_andReturnNoContent() throws Exception {
+        ChangePasswordDto changePasswordDto = ChangePasswordDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(changePasswordDto);
+
+        when(authorizationTokenDataMapper.map(any())).thenReturn(AuthorizationTokenDataFixture.load());
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .patch("/users/{userId}/change-password", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", AUTHORIZATION)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent());
+
+        verify(passwordChangeUseCase).execute(any(), anyString(), anyString(), anyString());
     }
 }
