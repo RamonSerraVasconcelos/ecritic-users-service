@@ -111,7 +111,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> editUser(@RequestHeader("Authorization") String authorization,
-                                                    @PathVariable UUID id,
+                                                    @PathVariable("id") UUID id,
                                                     @RequestBody UserRequestDto userRequestDto) {
 
         Set<ConstraintViolation<UserRequestDto>> violations = validator.validate(userRequestDto);
