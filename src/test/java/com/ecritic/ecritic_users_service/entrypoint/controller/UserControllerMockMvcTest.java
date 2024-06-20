@@ -1,6 +1,8 @@
 package com.ecritic.ecritic_users_service.entrypoint.controller;
 
+import com.ecritic.ecritic_users_service.core.fixture.AddressFixture;
 import com.ecritic.ecritic_users_service.core.fixture.UserFixture;
+import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
@@ -16,11 +18,15 @@ import com.ecritic.ecritic_users_service.core.usecase.PasswordResetUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
+import com.ecritic.ecritic_users_service.entrypoint.dto.AddressRequestDto;
+import com.ecritic.ecritic_users_service.entrypoint.dto.AddressResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
 import com.ecritic.ecritic_users_service.entrypoint.dto.ChangePasswordDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PasswordResetDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
+import com.ecritic.ecritic_users_service.entrypoint.fixture.AddressRequestDtoFixture;
+import com.ecritic.ecritic_users_service.entrypoint.fixture.AddressResponseDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.AuthorizationTokenDataFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.ChangePasswordDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.PasswordResetDtoFixture;
@@ -53,6 +59,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,6 +70,9 @@ class UserControllerMockMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapperr;
 
     @MockBean
     private CreateUserUseCase createUserUseCase;
@@ -339,5 +349,111 @@ class UserControllerMockMvcTest {
                 .andExpect(status().isNoContent());
 
         verify(passwordChangeUseCase).execute(any(), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    void givenRequestToCreateAddressEndpoint_thenCreate_andReturnAddress() throws Exception {
+        Address address = AddressFixture.load();
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
+        AddressResponseDto addressResponseDto = AddressResponseDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(addressRequestDto);
+
+        when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
+        when(addressDtoMapper.addressRequestDtoToAddress(any())).thenReturn(address);
+        when(createUserAddressUseCase.execute(any(), any())).thenReturn(address);
+        when(addressDtoMapper.addressToAddressResponseDto(any())).thenReturn(addressResponseDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/users/{userId}/address", authorizationTokenData.getUserId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", AUTHORIZATION)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isCreated())
+                .andExpect(content().json(objectMapper.writeValueAsString(addressResponseDto)));
+
+        verify(addressDtoMapper).addressRequestDtoToAddress(any());
+        verify(createUserAddressUseCase).execute(any(), any());
+        verify(addressDtoMapper).addressToAddressResponseDto(any());
+    }
+
+    @Test
+    void givenRequestToUpdateAddressEndpoint_thenUpdate_andReturnAddress() throws Exception {
+        Address address = AddressFixture.load();
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
+        AddressResponseDto addressResponseDto = AddressResponseDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(addressRequestDto);
+
+        when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
+        when(addressDtoMapper.addressRequestDtoToAddress(any())).thenReturn(address);
+        when(updateUserAddressUseCase.execute(any(), any(), any())).thenReturn(address);
+        when(addressDtoMapper.addressToAddressResponseDto(any())).thenReturn(addressResponseDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/users/{userId}/address/{addressId}", authorizationTokenData.getUserId(), address.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", AUTHORIZATION)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(addressResponseDto)));
+
+        verify(addressDtoMapper).addressRequestDtoToAddress(any());
+        verify(updateUserAddressUseCase).execute(any(), any(), any());
+        verify(addressDtoMapper).addressToAddressResponseDto(any());
+    }
+
+    @Test
+    void givenRequestToFindUserAddressesEndpoint_thenFind_andReturnAddresses() throws Exception {
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        AddressResponseDto addressResponseDto = AddressResponseDtoFixture.load();
+        List<Address> addresses = List.of(AddressFixture.load(), AddressFixture.load());
+        List<AddressResponseDto> addressResponseDtos = List.of(addressResponseDto, addressResponseDto);
+
+        when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
+        when(findUserAddressesUseCase.execute(any())).thenReturn(addresses);
+        when(addressDtoMapper.addressToAddressResponseDto(any())).thenReturn(addressResponseDto, addressResponseDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/users/{userId}/address", authorizationTokenData.getUserId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", AUTHORIZATION);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapperr.writeValueAsString(addressResponseDtos)));
+
+        verify(findUserAddressesUseCase).execute(any());
+    }
+
+    @Test
+    void givenRequestToFindUserAddressById_thenFind_andReturnAddress() throws Exception {
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        Address address = AddressFixture.load();
+        AddressResponseDto addressResponseDto = AddressResponseDtoFixture.load();
+
+        when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
+        when(findUserAddressUseCase.execute(any(), any())).thenReturn(address);
+        when(addressDtoMapper.addressToAddressResponseDto(any())).thenReturn(addressResponseDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/users/{userId}/address/{addressId}", authorizationTokenData.getUserId(), address.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", AUTHORIZATION);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapperr.writeValueAsString(addressResponseDto)));
+
+        verify(findUserAddressUseCase).execute(any(), any());
+        verify(addressDtoMapper).addressToAddressResponseDto(any());
     }
 }

@@ -163,7 +163,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> findUserById(@RequestHeader("Authorization") String authorization, @PathVariable UUID id) {
+    public ResponseEntity<UserResponseDto> findUserById(@RequestHeader("Authorization") String authorization, @PathVariable("id") UUID id) {
         authorizationTokenDataMapper.map(authorization);
 
         User user = findUserByIdUseCase.execute(id);
