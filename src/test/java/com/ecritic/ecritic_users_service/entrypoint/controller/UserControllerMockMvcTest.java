@@ -156,7 +156,7 @@ class UserControllerMockMvcTest {
                 .andExpect(jsonPath("$.email").value(userResponseDto.getEmail()))
                 .andExpect(jsonPath("$.description").value(userResponseDto.getDescription()))
                 .andExpect(jsonPath("$.active").value(userResponseDto.isActive()))
-                .andExpect(jsonPath("$.role").value(userResponseDto.getRole().toString()))
+                .andExpect(jsonPath("$.role").value(userResponseDto.getRole()))
                 .andExpect(jsonPath("$.country.id").value(userResponseDto.getCountry().getId()))
                 .andExpect(jsonPath("$.country.name").value(userResponseDto.getCountry().getName()))
                 .andExpect(jsonPath("$.createdAt").isNotEmpty());
