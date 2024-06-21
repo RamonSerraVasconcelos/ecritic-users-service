@@ -35,6 +35,7 @@ import com.ecritic.ecritic_users_service.entrypoint.fixture.UserResponseDtoFixtu
 import com.ecritic.ecritic_users_service.entrypoint.mapper.AddressDtoMapper;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.AuthorizationTokenDataMapper;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.UserDtoMapper;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +59,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -201,6 +203,36 @@ class UserControllerMockMvcTest {
     }
 
     @Test
+    void givenRequestToUpdateUserEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        UserRequestDto userRequestDto = UserRequestDtoFixture.load();
+        UserResponseDto userResponseDto = UserResponseDtoFixture.load();
+        User user = UserFixture.load();
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userRequestDto);
+
+        when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
+        when(userDtoMapper.userRequestDtoToUser(any(UserRequestDto.class))).thenReturn(user);
+        when(updateUserUseCase.execute(any(UUID.class), any(User.class))).thenReturn(user);
+        when(userDtoMapper.userToUserResponseDto(any(User.class))).thenReturn(userResponseDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/users/{id}", authorizationTokenData.getUserId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(updateUserUseCase);
+    }
+
+    @Test
     void givenRequestToUsersEndpoint_thenReturnAllUsers() throws Exception {
         List<User> users = List.of(UserFixture.load(), UserFixture.load(), UserFixture.load());
         UserResponseDto userResponseDto = UserResponseDtoFixture.load();
@@ -259,6 +291,22 @@ class UserControllerMockMvcTest {
     }
 
     @Test
+    void givenRequestToGetUserEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/users/" + UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(findUserByIdUseCase);
+    }
+
+    @Test
     void givenRequestToResetEmailRequestEndpointWithValidParameters_thenReturnResponseNoContent() throws Exception {
         UserRequestDto userRequestDto = UserRequestDto.builder()
                 .email("jI8eU@example.com")
@@ -277,6 +325,30 @@ class UserControllerMockMvcTest {
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void givenRequestToResetEmailRequestEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        UserRequestDto userRequestDto = UserRequestDto.builder()
+                .email("jI8eU@example.com")
+                .build();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/users/request-email-change")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(emailResetRequestUseCase);
     }
 
     @Test
@@ -352,6 +424,28 @@ class UserControllerMockMvcTest {
     }
 
     @Test
+    void givenRequestToChangePasswordEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        ChangePasswordDto changePasswordDto = ChangePasswordDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(changePasswordDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .patch("/users/{userId}/change-password", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(passwordChangeUseCase);
+    }
+
+    @Test
     void givenRequestToCreateAddressEndpoint_thenCreate_andReturnAddress() throws Exception {
         Address address = AddressFixture.load();
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
@@ -379,6 +473,31 @@ class UserControllerMockMvcTest {
         verify(addressDtoMapper).addressRequestDtoToAddress(any());
         verify(createUserAddressUseCase).execute(any(), any());
         verify(addressDtoMapper).addressToAddressResponseDto(any());
+    }
+
+    @Test
+    void givenRequestToCreateAddressEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(addressRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/users/{userId}/address", authorizationTokenData.getUserId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(addressDtoMapper);
+        verifyNoInteractions(createUserAddressUseCase);
+        verifyNoInteractions(addressDtoMapper);
     }
 
     @Test
@@ -412,6 +531,31 @@ class UserControllerMockMvcTest {
     }
 
     @Test
+    void givenRequestToUpdateAddressEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(addressRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/users/{userId}/address/{addressId}", authorizationTokenData.getUserId(), UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(addressDtoMapper);
+        verifyNoInteractions(updateUserAddressUseCase);
+        verifyNoInteractions(addressDtoMapper);
+    }
+
+    @Test
     void givenRequestToFindUserAddressesEndpoint_thenFind_andReturnAddresses() throws Exception {
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
         AddressResponseDto addressResponseDto = AddressResponseDtoFixture.load();
@@ -435,6 +579,23 @@ class UserControllerMockMvcTest {
     }
 
     @Test
+    void givenRequestToFindUserAddressesEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/users/{userId}/address", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(findUserAddressesUseCase);
+        verifyNoInteractions(addressDtoMapper);
+    }
+
+    @Test
     void givenRequestToFindUserAddressById_thenFind_andReturnAddress() throws Exception {
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
         Address address = AddressFixture.load();
@@ -455,5 +616,22 @@ class UserControllerMockMvcTest {
 
         verify(findUserAddressUseCase).execute(any(), any());
         verify(addressDtoMapper).addressToAddressResponseDto(any());
+    }
+
+    @Test
+    void givenRequestToFindUserAddressById_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .get("/users/{userId}/address/{addressId}", UUID.randomUUID(), UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(findUserAddressUseCase);
+        verifyNoInteractions(addressDtoMapper);
     }
 }
