@@ -1,5 +1,6 @@
 package com.ecritic.ecritic_users_service.entrypoint.mapper;
 
+import com.ecritic.ecritic_users_service.core.model.Role;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
 import com.ecritic.ecritic_users_service.entrypoint.validation.TokenUtils;
 import com.ecritic.ecritic_users_service.exception.UnauthorizedAccessException;
@@ -26,7 +27,7 @@ public class AuthorizationTokenDataMapper {
 
             return AuthorizationTokenData.builder()
                     .userId(userId)
-                    .userRole(userRole)
+                    .userRole(Role.parseRole(userRole))
                     .build();
         } catch (Exception ex) {
             log.error("Error parsing access token", ex);

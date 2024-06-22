@@ -3,8 +3,9 @@ package com.ecritic.ecritic_users_service.core.usecase;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.enums.NotificationContentEnum;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.SaveUserBoundary;
+import com.ecritic.ecritic_users_service.exception.BusinessViolationException;
 import com.ecritic.ecritic_users_service.exception.DefaultException;
-import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
+import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,12 +37,12 @@ public class EmailResetUseCase {
 
             if (!isEmailResetHashValid) {
                 log.warn("Invalid email change token: [{}] for user with id: [{}]", emailResetHash, userId);
-                throw new ResourceViolationException("Invalid request data");
+                throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_01);
             }
 
             if (LocalDateTime.now().isAfter(user.getEmailResetDate())) {
                 log.warn("User with id: [{}] tried to change email after token expiration", userId);
-                throw new ResourceViolationException("Invalid request data");
+                throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_01);
             }
 
             user.setEmail(user.getNewEmailReset());
@@ -54,11 +55,11 @@ public class EmailResetUseCase {
 
             sendEmailNotificationUseCase.execute(user.getId(), user.getEmail(), NotificationContentEnum.EMAIL_RESET, null);
         } catch (DefaultException ex) {
-          log.error("Error when changing email for user with id: [{}]. Exception: [{}]", userId, ex.getErrorResponse());
-          throw ex;
+            log.error("Error when changing email for user with id: [{}]. Exception: [{}]", userId, ex.getErrorResponse());
+            throw ex;
         } catch (Exception e) {
             log.error("Error when changing email for user with id: [{}]", userId, e);
-            throw new ResourceViolationException("Invalid request data");
+            throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_01);
         }
     }
 }

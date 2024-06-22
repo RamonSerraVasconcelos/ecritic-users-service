@@ -38,8 +38,6 @@ public class UserRequestDto {
     @Pattern(regexp = "^\\d{13}$", message = "Invalid phone number format")
     private String phone;
 
-    private String role;
-
     @NotNull(message = "CountryId is required")
     private Long countryId;
 }

@@ -7,7 +7,7 @@ import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.EmailResetRequestUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.EmailResetUseCase;
-import com.ecritic.ecritic_users_service.core.usecase.FindUserAddresUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserAddressesUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUsersUseCase;
@@ -75,7 +75,7 @@ public class UserController {
 
     private final FindUserAddressesUseCase findUserAddressesUseCase;
 
-    private final FindUserAddresUseCase findUserAddresUseCase;
+    private final FindUserAddressUseCase findUserAddressUseCase;
 
     private final EmailResetRequestUseCase emailResetRequestUseCase;
 
@@ -111,13 +111,15 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> editUser(@RequestHeader("Authorization") String authorization,
-                                                    @PathVariable UUID id,
+                                                    @PathVariable("id") UUID id,
                                                     @RequestBody UserRequestDto userRequestDto) {
 
         Set<ConstraintViolation<UserRequestDto>> violations = validator.validate(userRequestDto);
         if (!violations.isEmpty()) {
             violations.forEach(violation -> {
-                if (!violation.getPropertyPath().toString().equals("email") && !violation.getPropertyPath().toString().equals("password")) {
+                if (!violation.getPropertyPath().toString().equals("email")
+                        && !violation.getPropertyPath().toString().equals("password")
+                        && !violation.getPropertyPath().toString().equals("passwordConfirmation")) {
                     throw new ResourceViolationException(violation);
                 }
             });
@@ -163,15 +165,72 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> findUserById(@RequestHeader("Authorization") String authorization, @PathVariable UUID id) {
-        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
-
-        if (!authorizationTokenData.getUserId().equals(id)) {
-            throw new ResourceViolationException("Invalid request data");
-        }
+    public ResponseEntity<UserResponseDto> findUserById(@RequestHeader("Authorization") String authorization, @PathVariable("id") UUID id) {
+        authorizationTokenDataMapper.map(authorization);
 
         User user = findUserByIdUseCase.execute(id);
         return ResponseEntity.status(HttpStatus.OK).body(userDtoMapper.userToUserResponseDto(user));
+    }
+
+    @PostMapping("/request-email-change")
+    public ResponseEntity<Void> requestEmailChange(@RequestHeader("Authorization") String authorization, @RequestBody UserRequestDto userDto) {
+        if (isNull(userDto.getEmail())) {
+            throw new ResourceViolationException("Email is required");
+        }
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+
+        emailResetRequestUseCase.execute(authorizationTokenData.getUserId(), userDto.getEmail());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(path = "/{userId}/change-email")
+    public ResponseEntity<Void> emailReset(@PathVariable("userId") UUID userId, @RequestParam("token") String emailResetHash) {
+        emailResetUseCase.execute(userId, emailResetHash);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(path = "/forgot-password")
+    public ResponseEntity<Void> passwordResetRequest(@RequestBody UserRequestDto userRequestDto) {
+        if (isNull(userRequestDto.getEmail())) {
+            throw new ResourceViolationException("Email is required");
+        }
+
+        passwordResetRequestUseCase.execute(userRequestDto.getEmail());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping(path = "/{userId}/reset-password")
+    public ResponseEntity<Void> passwordReset(@PathVariable("userId") UUID userId, @RequestBody PasswordResetDto passwordResetData) {
+        Set<ConstraintViolation<PasswordResetDto>> violations = validator.validate(passwordResetData);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        passwordResetUseCase.execute(userId,
+                passwordResetData.getPasswordResetHash(),
+                passwordResetData.getPassword(),
+                passwordResetData.getPasswordConfirmation());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{userId}/change-password")
+    public ResponseEntity<Void> changePassword(@RequestHeader("Authorization") String authorization,
+                                               @PathVariable("userId") UUID userId,
+                                               @RequestBody ChangePasswordDto changePasswordDto) {
+
+        Set<ConstraintViolation<ChangePasswordDto>> violations = validator.validate(changePasswordDto);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        passwordChangeUseCase.execute(userId, changePasswordDto.getCurrentPassword(), changePasswordDto.getNewPassword(), changePasswordDto.getPasswordConfirmation());
+
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{userId}/address")
@@ -252,72 +311,11 @@ public class UserController {
             throw new ResourceViolationException("Invalid request data");
         }
 
-        Address address = findUserAddresUseCase.execute(userId, addressId);
+        Address address = findUserAddressUseCase.execute(userId, addressId);
 
         AddressResponseDto addressResponseDto = addressDtoMapper.addressToAddressResponseDto(address);
 
         return ResponseEntity.status(HttpStatus.OK).body(addressResponseDto);
-    }
-
-    @PostMapping("/request-email-change")
-    public ResponseEntity<Void> requestEmailChange(@RequestHeader("Authorization") String authorization, @RequestBody UserRequestDto userDto) {
-        if (isNull(userDto.getEmail())) {
-            throw new ResourceViolationException("Email is required");
-        }
-
-        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
-
-        emailResetRequestUseCase.execute(authorizationTokenData.getUserId(), userDto.getEmail());
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping(path = "/{userId}/change-email")
-    public ResponseEntity<Void> emailReset(@PathVariable("userId") UUID userId, @RequestParam("token") String emailResetHash) {
-        emailResetUseCase.execute(userId, emailResetHash);
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping(path = "/forgot-password")
-    public ResponseEntity<Void> passwordResetRequest(@RequestBody UserRequestDto userRequestDto) {
-        if (isNull(userRequestDto.getEmail())) {
-            throw new ResourceViolationException("Email is required");
-        }
-
-        passwordResetRequestUseCase.execute(userRequestDto.getEmail());
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping(path = "/{userId}/reset-password")
-    public ResponseEntity<Void> passwordReset(@PathVariable("userId") UUID userId, @RequestBody PasswordResetDto passwordResetData) {
-        Set<ConstraintViolation<PasswordResetDto>> violations = validator.validate(passwordResetData);
-        if (!violations.isEmpty()) {
-            throw new ResourceViolationException(violations);
-        }
-
-        passwordResetUseCase.execute(userId,
-                passwordResetData.getPasswordResetHash(),
-                passwordResetData.getPassword(),
-                passwordResetData.getPasswordConfirmation());
-
-        return ResponseEntity.noContent().build();
-    }
-
-    @PatchMapping("/{userId}/change-password")
-    public ResponseEntity<Void> changePassword(@RequestHeader("Authorization") String authorization,
-                                               @PathVariable("userId") UUID userId,
-                                               @RequestBody ChangePasswordDto changePasswordDto) {
-
-        Set<ConstraintViolation<ChangePasswordDto>> violations = validator.validate(changePasswordDto);
-        if (!violations.isEmpty()) {
-            throw new ResourceViolationException(violations);
-        }
-
-        passwordChangeUseCase.execute(userId, changePasswordDto.getCurrentPassword(), changePasswordDto.getNewPassword(), changePasswordDto.getPasswordConfirmation());
-
-        return ResponseEntity.noContent().build();
     }
 }
 

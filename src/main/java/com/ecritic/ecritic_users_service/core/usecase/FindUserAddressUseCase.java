@@ -15,7 +15,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FindUserAddresUseCase {
+public class FindUserAddressUseCase {
 
     private final FindUserAddressByIdBoundary findUserAddressByIdBoundary;
 

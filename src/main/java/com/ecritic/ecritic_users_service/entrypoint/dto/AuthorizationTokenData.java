@@ -1,5 +1,6 @@
 package com.ecritic.ecritic_users_service.entrypoint.dto;
 
+import com.ecritic.ecritic_users_service.core.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,5 +17,5 @@ import java.util.UUID;
 public class AuthorizationTokenData {
 
     private UUID userId;
-    private String userRole;
+    private Role userRole;
 }
