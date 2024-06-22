@@ -38,6 +38,9 @@ import com.ecritic.ecritic_users_service.entrypoint.mapper.UserDtoMapper;
 import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +58,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -166,6 +170,28 @@ class UserControllerMockMvcTest {
         verify(createUserUseCase).execute(any(User.class), anyString());
     }
 
+    @ParameterizedTest
+    @MethodSource("provideUserCreateData")
+    void givenRequestToRegisterUserWithInvalidParameters_thenReturnBadRequest(UserRequestDto userRequestDto, String message) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_06.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_06.getMessage()))
+                .andExpect(jsonPath("$.detail").value(message))
+                .andReturn();
+
+        verifyNoInteractions(userDtoMapper);
+        verifyNoInteractions(createUserUseCase);
+    }
+
     @Test
     void givenRequestToUpdateUserEndpointWithValidParameters_thenReturnUpdatedUser() throws Exception {
         UserRequestDto userRequestDto = UserRequestDtoFixture.load();
@@ -229,6 +255,29 @@ class UserControllerMockMvcTest {
                 .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
                 .andReturn();
 
+        verifyNoInteractions(updateUserUseCase);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideUserUpdateData")
+    void givenRequestToUpdateUserWithInvalidParameters_thenReturnBadRequest(UserRequestDto userRequestDto, String message) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .put("/users/{id}", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", AUTHORIZATION)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_06.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_06.getMessage()))
+                .andExpect(jsonPath("$.detail").value(message))
+                .andReturn();
+
+        verifyNoInteractions(userDtoMapper);
         verifyNoInteractions(updateUserUseCase);
     }
 
@@ -500,6 +549,29 @@ class UserControllerMockMvcTest {
         verifyNoInteractions(addressDtoMapper);
     }
 
+    @ParameterizedTest
+    @MethodSource("provideUserAddressCreateData")
+    void givenRequestToCreateUserAddressEndpointWithInvalidParameters_thenReturnBadRequest(AddressRequestDto addressRequestDto, String message) throws Exception {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(addressRequestDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .post("/users/{userId}/address", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", AUTHORIZATION)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_06.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_06.getMessage()))
+                .andExpect(jsonPath("$.detail").value(message))
+                .andReturn();
+
+        verifyNoInteractions(addressDtoMapper);
+        verifyNoInteractions(createUserAddressUseCase);
+    }
+
     @Test
     void givenRequestToUpdateAddressEndpoint_thenUpdate_andReturnAddress() throws Exception {
         Address address = AddressFixture.load();
@@ -633,5 +705,80 @@ class UserControllerMockMvcTest {
 
         verifyNoInteractions(findUserAddressUseCase);
         verifyNoInteractions(addressDtoMapper);
+    }
+
+    static Stream<Arguments> provideUserCreateData() {
+        UserRequestDto user1 = UserRequestDtoFixture.load();
+        user1.setName(null);
+
+        UserRequestDto user2 = UserRequestDtoFixture.load();
+        user2.setEmail(null);
+
+        UserRequestDto user3 = UserRequestDtoFixture.load();
+        user3.setPassword(null);
+
+        UserRequestDto user4 = UserRequestDtoFixture.load();
+        user4.setPasswordConfirmation(null);
+
+        UserRequestDto user5 = UserRequestDtoFixture.load();
+        user5.setPhone("123456789");
+
+        UserRequestDto user6 = UserRequestDtoFixture.load();
+        user6.setCountryId(null);
+
+        return Stream.of(
+                Arguments.of(user1, "name: Name is required"),
+                Arguments.of(user2, "email: Email is required"),
+                Arguments.of(user3, "password: Password is required"),
+                Arguments.of(user4, "passwordConfirmation: Password confirmation is required"),
+                Arguments.of(user5, "phone: Invalid phone number format"),
+                Arguments.of(user6, "countryId: CountryId is required")
+        );
+    }
+
+    static Stream<Arguments> provideUserUpdateData() {
+        UserRequestDto user1 = UserRequestDtoFixture.load();
+        user1.setName(null);
+
+        UserRequestDto user2 = UserRequestDtoFixture.load();
+        user2.setPhone("123456789");
+
+        UserRequestDto user3 = UserRequestDtoFixture.load();
+        user3.setCountryId(null);
+
+        return Stream.of(
+                Arguments.of(user1, "Name is required"),
+                Arguments.of(user2, "Invalid phone number format"),
+                Arguments.of(user3, "CountryId is required")
+        );
+    }
+
+    static Stream<Arguments> provideUserAddressCreateData() {
+        AddressRequestDto address1 = AddressRequestDtoFixture.load();
+        address1.setCountryId(null);
+
+        AddressRequestDto address2 = AddressRequestDtoFixture.load();
+        address2.setUf(null);
+
+        AddressRequestDto address3 = AddressRequestDtoFixture.load();
+        address3.setCity(null);
+
+        AddressRequestDto address4 = AddressRequestDtoFixture.load();
+        address4.setNeighborhood(null);
+
+        AddressRequestDto address5 = AddressRequestDtoFixture.load();
+        address5.setStreet(null);
+
+        AddressRequestDto address6 = AddressRequestDtoFixture.load();
+        address6.setPostalCode(null);
+
+        return Stream.of(
+                Arguments.of(address1, "countryId: Country ID is required"),
+                Arguments.of(address2, "uf: UF is required"),
+                Arguments.of(address3, "city: City is required"),
+                Arguments.of(address4, "neighborhood: Neighborhood is required"),
+                Arguments.of(address5, "street: Street is required"),
+                Arguments.of(address6, "postalCode: Postal code is required")
+        );
     }
 }

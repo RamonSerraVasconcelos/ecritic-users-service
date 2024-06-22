@@ -117,7 +117,9 @@ public class UserController {
         Set<ConstraintViolation<UserRequestDto>> violations = validator.validate(userRequestDto);
         if (!violations.isEmpty()) {
             violations.forEach(violation -> {
-                if (!violation.getPropertyPath().toString().equals("email") && !violation.getPropertyPath().toString().equals("password")) {
+                if (!violation.getPropertyPath().toString().equals("email")
+                        && !violation.getPropertyPath().toString().equals("password")
+                        && !violation.getPropertyPath().toString().equals("passwordConfirmation")) {
                     throw new ResourceViolationException(violation);
                 }
             });

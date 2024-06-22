@@ -32,7 +32,6 @@ class UserDtoMapperTest {
         assertThat(user.getPassword()).isEqualTo(userRequestDto.getPassword());
         assertThat(user.getDescription()).isEqualTo(userRequestDto.getDescription());
         assertThat(user.getPhone()).isEqualTo(userRequestDto.getPhone());
-        assertThat(user.getRole().name()).isEqualTo(userRequestDto.getRole());
         assertThat(user.getCountry().getId()).isEqualTo(userRequestDto.getCountryId());
     }
 

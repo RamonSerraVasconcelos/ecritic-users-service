@@ -11,7 +11,6 @@ public class UserRequestDtoFixture {
                 .password("12345678")
                 .passwordConfirmation("12345678")
                 .description("I drive")
-                .role("DEFAULT")
                 .countryId(219L)
                 .build();
     }
