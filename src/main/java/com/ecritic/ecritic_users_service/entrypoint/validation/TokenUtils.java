@@ -12,6 +12,6 @@ public class TokenUtils {
 
     public static String getUserRoleFromToken(String token) {
         Claims claims = Jwts.parser().parseClaimsJwt(token).getBody();
-        return claims.get("role").toString();
+        return claims.get("userRole").toString();
     }
 }
