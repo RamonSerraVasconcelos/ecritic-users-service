@@ -12,6 +12,7 @@ spring:
   kafka:
     bootstrap-servers: ${ECRITIC_KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
     email-notification-topic: ${ECRITIC_KAFKA_EMAIL_NOTIFICATION_TOPIC:email-notification}
+    user-status-update-topic: ${ECRITIC_KAFKA_USER_STATUS_UPDATE_TOPIC:user-status-update}
   error:
     include-stacktrace: never
   data:

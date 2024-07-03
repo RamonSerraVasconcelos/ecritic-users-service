@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.core.usecase;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.enums.BanActionEnum;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.PostStatusUpdateMessageBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.UpdateBanListBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.UpdateUserStatusBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
@@ -25,27 +26,32 @@ public class UpdateUserStatusUseCase {
 
     private final UpdateBanListBoundary updateBanListBoundary;
 
-//    private final DeleteUserRefreshTokensBoundary deleteUserRefreshTokensBoundary;
+    private final PostStatusUpdateMessageBoundary postStatusUpdateMessageBoundary;
 
     public void execute(UUID id, String motive, BanActionEnum action) {
-        log.info("Updating user [{}] status with action: [{}]", id, action.name());
+        try {
+            log.info("Updating user [{}] status with action: [{}]", id, action.name());
 
-        Optional<User> optionalUser = findUserByIdBoundary.execute(id);
+            Optional<User> optionalUser = findUserByIdBoundary.execute(id);
 
-        if (optionalUser.isEmpty()) {
-            throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_09);
+            if (optionalUser.isEmpty()) {
+                log.warn("User [{}] not found", id);
+                throw new EntityNotFoundException(ErrorResponseCode.ECRITICUSERS_09);
+            }
+
+            boolean active = action != BanActionEnum.BAN;
+
+            if(optionalUser.get().isActive() == active) {
+                log.warn("User [{}] active status is already: [{}]", id, active);
+                return;
+            }
+
+            updateUserStatusBoundary.execute(id, active);
+            updateBanListBoundary.execute(id, motive, action);
+            postStatusUpdateMessageBoundary.execute(id, action);
+        } catch (Exception ex) {
+            log.error("Error updating status for userId: [{}]", id, ex);
+            throw ex;
         }
-
-        boolean active = action != BanActionEnum.BAN;
-
-        updateUserStatusBoundary.execute(id, active);
-        updateBanListBoundary.execute(id, motive, action);
-
-//        if (action == BanActionEnum.BAN) {
-//            deleteUserRefreshTokensBoundary.execute(user.getId());
-//            saveUserToBlacklistBoundary.execute(user.getId(), applicationProperties.getJwtExpiration());
-//        } else {
-//            removeUserFromBlacklistBoundary.execute(id);
-//        }
     }
 }
