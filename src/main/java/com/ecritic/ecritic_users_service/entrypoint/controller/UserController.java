@@ -1,8 +1,10 @@
 package com.ecritic.ecritic_users_service.entrypoint.controller;
 
 import com.ecritic.ecritic_users_service.core.model.Address;
+import com.ecritic.ecritic_users_service.core.model.Role;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.UserFilter;
+import com.ecritic.ecritic_users_service.core.model.enums.BanActionEnum;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.EmailResetRequestUseCase;
@@ -15,7 +17,9 @@ import com.ecritic.ecritic_users_service.core.usecase.PasswordChangeUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.PasswordResetRequestUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.PasswordResetUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.UpdateUserStatusUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.ValidateUserRoleUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AddressRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AddressResponseDto;
@@ -24,6 +28,7 @@ import com.ecritic.ecritic_users_service.entrypoint.dto.ChangePasswordDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.Metadata;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PageableUserResponse;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PasswordResetDto;
+import com.ecritic.ecritic_users_service.entrypoint.dto.UserBanDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.AddressDtoMapper;
@@ -48,6 +53,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -86,6 +92,10 @@ public class UserController {
     private final PasswordResetUseCase passwordResetUseCase;
 
     private final PasswordChangeUseCase passwordChangeUseCase;
+
+    private final UpdateUserStatusUseCase updateUserStatusUseCase;
+
+    private final ValidateUserRoleUseCase validateUserRoleUseCase;
 
     private final AuthorizationTokenDataMapper authorizationTokenDataMapper;
 
@@ -229,6 +239,24 @@ public class UserController {
         }
 
         passwordChangeUseCase.execute(userId, changePasswordDto.getCurrentPassword(), changePasswordDto.getNewPassword(), changePasswordDto.getPasswordConfirmation());
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{userId}/status")
+    public ResponseEntity<Void> updateUserStatus(@RequestHeader("Authorization") String authorization,
+                                                 @PathVariable("userId") UUID userId,
+                                                 @RequestBody UserBanDto userBanDto) {
+
+        AuthorizationTokenData authorizationTokenData = authorizationTokenDataMapper.map(authorization);
+        validateUserRoleUseCase.execute(EnumSet.of(Role.MODERATOR), authorizationTokenData.getUserRole());
+
+        Set<ConstraintViolation<UserBanDto>> violations = validator.validate(userBanDto);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
+        updateUserStatusUseCase.execute(userId, userBanDto.getMotive(), BanActionEnum.valueOf(userBanDto.getAction()));
 
         return ResponseEntity.noContent().build();
     }

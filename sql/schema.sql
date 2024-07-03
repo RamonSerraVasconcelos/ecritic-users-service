@@ -52,7 +52,7 @@ CREATE TABLE user_adresses
 
 CREATE TABLE banlist
 (
-    id         UUID      NOT NULL,
+    id         BIGSERIAL      NOT NULL,
     user_id    UUID,
     action     VARCHAR(5),
     motive     VARCHAR(1000),
