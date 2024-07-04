@@ -16,5 +16,5 @@ import java.util.UUID;
 public class UserStatusUpdateMessage {
 
     private UUID userId;
-    private String action;
+    private boolean active;
 }

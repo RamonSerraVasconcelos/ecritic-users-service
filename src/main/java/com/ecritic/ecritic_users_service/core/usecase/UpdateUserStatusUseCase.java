@@ -48,7 +48,7 @@ public class UpdateUserStatusUseCase {
 
             updateUserStatusBoundary.execute(id, active);
             updateBanListBoundary.execute(id, motive, action);
-            postStatusUpdateMessageBoundary.execute(id, action);
+            postStatusUpdateMessageBoundary.execute(id, active);
         } catch (Exception ex) {
             log.error("Error updating status for userId: [{}]", id, ex);
             throw ex;

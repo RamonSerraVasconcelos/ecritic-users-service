@@ -1,6 +1,5 @@
 package com.ecritic.ecritic_users_service.dataprovider.messaging.impl;
 
-import com.ecritic.ecritic_users_service.core.model.enums.BanActionEnum;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.PostStatusUpdateMessageBoundary;
 import com.ecritic.ecritic_users_service.dataprovider.messaging.entity.UserStatusUpdateMessage;
 import com.ecritic.ecritic_users_service.dataprovider.messaging.producer.UserStatusUpdateProducer;
@@ -15,10 +14,10 @@ public class PostStatusUpdateMessageGateway implements PostStatusUpdateMessageBo
 
     private final UserStatusUpdateProducer userStatusUpdateProducer;
 
-    public void execute(UUID userId, BanActionEnum action) {
+    public void execute(UUID userId, boolean active) {
         UserStatusUpdateMessage userStatusUpdateMessage = UserStatusUpdateMessage.builder()
                 .userId(userId)
-                .action(action.name())
+                .active(active)
                 .build();
 
         userStatusUpdateProducer.execute(userStatusUpdateMessage);
