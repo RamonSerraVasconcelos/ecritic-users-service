@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.exception.handler;
 import com.ecritic.ecritic_users_service.exception.BusinessViolationException;
 import com.ecritic.ecritic_users_service.exception.EntityConflictException;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
+import com.ecritic.ecritic_users_service.exception.ForbiddenAccessException;
 import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
 import com.ecritic.ecritic_users_service.exception.UnauthorizedAccessException;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +63,11 @@ public class ApplicationExceptionHandler {
     @ExceptionHandler(UnauthorizedAccessException.class)
     public ResponseEntity<ErrorResponse> unauthorizedAccessExceptionHandler(UnauthorizedAccessException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getErrorResponse());
+    }
+
+    @ExceptionHandler(ForbiddenAccessException.class)
+    public ResponseEntity<ErrorResponse> forbiddenAccessExceptionHandler(ForbiddenAccessException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getErrorResponse());
     }
 
     @ExceptionHandler(FileSizeLimitExceededException.class)

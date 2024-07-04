@@ -2,6 +2,7 @@ package com.ecritic.ecritic_users_service.core.usecase;
 
 import com.ecritic.ecritic_users_service.core.fixture.UserFixture;
 import com.ecritic.ecritic_users_service.core.model.User;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.CacheUserBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindCachedUserBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
 import com.ecritic.ecritic_users_service.exception.EntityNotFoundException;
@@ -32,6 +33,9 @@ class FindUserByIdUseCaseTest {
     @Mock
     private FindUserByIdBoundary findUserByIdBoundary;
 
+    @Mock
+    private CacheUserBoundary cacheUserBoundary;
+
     @Test
     void givenExecution_whenUserIsCached_thenReturnUserFromCache() {
         User user = UserFixture.load();
@@ -57,6 +61,7 @@ class FindUserByIdUseCaseTest {
 
         verify(findCachedUserBoundary).execute(user.getId());
         verify(findUserByIdBoundary).execute(user.getId());
+        verify(cacheUserBoundary).execute(user);
 
         assertThat(foundUser).isNotNull().usingRecursiveComparison().isEqualTo(user);
     }

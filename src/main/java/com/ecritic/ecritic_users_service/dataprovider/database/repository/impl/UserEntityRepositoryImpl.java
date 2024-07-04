@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -40,6 +41,16 @@ public class UserEntityRepositoryImpl implements UserEntityCustomRepository {
         addConditions(userFilter, queryBuilder, params);
 
         return jdbcTemplate.queryForObject(queryBuilder.toString(), params, Long.class);
+    }
+
+    public void updateStatus(UUID id, boolean active) {
+        String query = "UPDATE users SET active = :active WHERE id = CAST(:id AS UUID)";
+
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("active", active);
+        params.addValue("id", id.toString());
+
+        jdbcTemplate.update(query, params);
     }
 
     private void addConditions(UserFilter userFilter, StringBuilder queryBuilder, MapSqlParameterSource params) {
