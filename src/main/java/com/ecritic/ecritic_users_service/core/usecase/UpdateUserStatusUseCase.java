@@ -3,6 +3,8 @@ package com.ecritic.ecritic_users_service.core.usecase;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.model.enums.BanActionEnum;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.FindUserByIdBoundary;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUserCacheBoundary;
+import com.ecritic.ecritic_users_service.core.usecase.boundary.InvalidateUsersCacheBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.PostStatusUpdateMessageBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.UpdateBanListBoundary;
 import com.ecritic.ecritic_users_service.core.usecase.boundary.UpdateUserStatusBoundary;
@@ -28,6 +30,10 @@ public class UpdateUserStatusUseCase {
 
     private final PostStatusUpdateMessageBoundary postStatusUpdateMessageBoundary;
 
+    private final InvalidateUsersCacheBoundary invalidateUsersCacheBoundary;
+
+    private final InvalidateUserCacheBoundary invalidateUserCacheBoundary;
+
     public void execute(UUID id, String motive, BanActionEnum action) {
         try {
             log.info("Updating user [{}] status with action: [{}]", id, action.name());
@@ -49,6 +55,9 @@ public class UpdateUserStatusUseCase {
             updateUserStatusBoundary.execute(id, active);
             updateBanListBoundary.execute(id, motive, action);
             postStatusUpdateMessageBoundary.execute(id, active);
+
+            invalidateUsersCacheBoundary.execute();
+            invalidateUserCacheBoundary.execute(id);
         } catch (Exception ex) {
             log.error("Error updating status for userId: [{}]", id, ex);
             throw ex;
