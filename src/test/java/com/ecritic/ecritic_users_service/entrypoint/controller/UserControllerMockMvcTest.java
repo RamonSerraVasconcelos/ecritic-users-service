@@ -4,6 +4,7 @@ import com.ecritic.ecritic_users_service.core.fixture.AddressFixture;
 import com.ecritic.ecritic_users_service.core.fixture.UserFixture;
 import com.ecritic.ecritic_users_service.core.model.Address;
 import com.ecritic.ecritic_users_service.core.model.User;
+import com.ecritic.ecritic_users_service.core.model.enums.BanActionEnum;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserAddressUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.CreateUserUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.EmailResetRequestUseCase;
@@ -16,13 +17,16 @@ import com.ecritic.ecritic_users_service.core.usecase.PasswordChangeUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.PasswordResetRequestUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.PasswordResetUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserAddressUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.UpdateUserStatusUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.UpdateUserUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.ValidateUserRoleUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.UserFilterMapper;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AddressRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AddressResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationTokenData;
 import com.ecritic.ecritic_users_service.entrypoint.dto.ChangePasswordDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.PasswordResetDto;
+import com.ecritic.ecritic_users_service.entrypoint.dto.UserBanDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserRequestDto;
 import com.ecritic.ecritic_users_service.entrypoint.dto.UserResponseDto;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.AddressRequestDtoFixture;
@@ -30,6 +34,7 @@ import com.ecritic.ecritic_users_service.entrypoint.fixture.AddressResponseDtoFi
 import com.ecritic.ecritic_users_service.entrypoint.fixture.AuthorizationTokenDataFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.ChangePasswordDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.PasswordResetDtoFixture;
+import com.ecritic.ecritic_users_service.entrypoint.fixture.UserBanDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.UserRequestDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.fixture.UserResponseDtoFixture;
 import com.ecritic.ecritic_users_service.entrypoint.mapper.AddressDtoMapper;
@@ -118,6 +123,12 @@ class UserControllerMockMvcTest {
 
     @MockBean
     private PasswordChangeUseCase passwordChangeUseCase;
+
+    @MockBean
+    private UpdateUserStatusUseCase updateUserStatusUseCase;
+
+    @MockBean
+    private ValidateUserRoleUseCase validateUserRoleUseCase;
 
     @MockBean
     private AuthorizationTokenDataMapper authorizationTokenDataMapper;
@@ -495,6 +506,75 @@ class UserControllerMockMvcTest {
     }
 
     @Test
+    void givenRequestToChangeUserStatusEndpoint_thenChangeUserStatus_andReturnNoContent() throws Exception {
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        UserBanDto userBanDto = UserBanDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userBanDto);
+
+        when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .patch("/users/{userId}/status", authorizationTokenData.getUserId())
+                .header("Authorization", AUTHORIZATION)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isNoContent());
+
+        verify(updateUserStatusUseCase).execute(authorizationTokenData.getUserId(), userBanDto.getMotive(), BanActionEnum.valueOf(userBanDto.getAction()));
+    }
+
+    @Test
+    void givenRequestToChangeUserStatusEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
+        UserBanDto userBanDto = UserBanDtoFixture.load();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userBanDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .patch("/users/{userId}/status", UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_02.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_02.getMessage()))
+                .andExpect(jsonPath("$.detail").value("Required request header 'Authorization' for method parameter type String is not present"))
+                .andReturn();
+
+        verifyNoInteractions(updateUserStatusUseCase);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideUserStatusUpdateData")
+    void givenRequestToUpdateUserStatusWithInvalidParameters_ThenReturnBadRequest(UserBanDto userBanDto, String message) throws Exception {
+        AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
+        when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String requestBody = objectMapper.writeValueAsString(userBanDto);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
+                .patch("/users/{userId}/status", authorizationTokenData.getUserId())
+                .header("Authorization", AUTHORIZATION)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody);
+
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(ErrorResponseCode.ECRITICUSERS_06.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorResponseCode.ECRITICUSERS_06.getMessage()))
+                .andExpect(jsonPath("$.detail").value(message))
+                .andReturn();
+
+        verifyNoInteractions(updateUserStatusUseCase);
+    }
+
+    @Test
     void givenRequestToCreateAddressEndpoint_thenCreate_andReturnAddress() throws Exception {
         Address address = AddressFixture.load();
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
@@ -779,6 +859,23 @@ class UserControllerMockMvcTest {
                 Arguments.of(address4, "neighborhood: Neighborhood is required"),
                 Arguments.of(address5, "street: Street is required"),
                 Arguments.of(address6, "postalCode: Postal code is required")
+        );
+    }
+
+    static Stream<Arguments> provideUserStatusUpdateData() {
+        UserBanDto userBanDto1 = UserBanDtoFixture.load();
+        userBanDto1.setAction(null);
+
+        UserBanDto userBanDto2 = UserBanDtoFixture.load();
+        userBanDto2.setAction("banning");
+
+        UserBanDto userBanDto3 = UserBanDtoFixture.load();
+        userBanDto3.setMotive(null);
+
+        return Stream.of(
+                Arguments.of(userBanDto1, "action: Status update action is required"),
+                Arguments.of(userBanDto2, "action: Action must be either BAN or UNBAN"),
+                Arguments.of(userBanDto3, "motive: Motive is required")
         );
     }
 }
