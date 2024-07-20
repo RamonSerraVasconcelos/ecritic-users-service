@@ -3,7 +3,7 @@ CREATE TABLE users
     id                  UUID NOT NULL,
     name                TEXT NOT NULL,
     email               TEXT NOT NULL,
-    password            TEXT NOT NULL,
+    password            TEXT,
     phone               TEXT,
     description         TEXT,
     country_id          INT,

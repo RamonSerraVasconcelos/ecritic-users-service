@@ -3,6 +3,7 @@ package com.ecritic.ecritic_users_service.entrypoint.controller;
 import com.ecritic.ecritic_users_service.core.model.User;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByEmailUseCase;
 import com.ecritic.ecritic_users_service.core.usecase.FindUserByIdUseCase;
+import com.ecritic.ecritic_users_service.core.usecase.UpsertExternalUserUseCase;
 import com.ecritic.ecritic_users_service.dataprovider.database.mapper.AuthorizationInfoMapper;
 import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationInfo;
 import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +27,8 @@ public class AuthController {
     private final FindUserByEmailUseCase findUserByEmailUseCase;
 
     private final FindUserByIdUseCase findUserByIdUseCase;
+
+    private final UpsertExternalUserUseCase upsertExternalUserUseCase;
 
     private final AuthorizationInfoMapper authorizationInfoMapper;
 
@@ -43,6 +47,13 @@ public class AuthController {
         } else {
             user = findUserByEmailUseCase.execute(email);
         }
+
+        return ResponseEntity.status(HttpStatus.OK).body(authorizationInfoMapper.userToAuthorizationInfo(user));
+    }
+
+    @PutMapping("/users/external")
+    public ResponseEntity<AuthorizationInfo> upsertExternalUser(@RequestParam("email") String email, @RequestParam("name") String name) {
+        User user = upsertExternalUserUseCase.execute(email, name);
 
         return ResponseEntity.status(HttpStatus.OK).body(authorizationInfoMapper.userToAuthorizationInfo(user));
     }
