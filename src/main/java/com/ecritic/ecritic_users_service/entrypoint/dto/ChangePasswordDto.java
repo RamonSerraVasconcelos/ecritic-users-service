@@ -1,6 +1,7 @@
 package com.ecritic.ecritic_users_service.entrypoint.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,7 @@ import org.hibernate.validator.constraints.Length;
 @Builder
 public class ChangePasswordDto {
 
-    @NotBlank(message = "Password is required")
+    @NotNull(message = "Password is required")
     private String currentPassword;
 
     @NotBlank(message = "New password is required")

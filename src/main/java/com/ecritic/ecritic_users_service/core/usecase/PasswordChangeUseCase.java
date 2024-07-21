@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.Objects.nonNull;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -47,18 +49,20 @@ public class PasswordChangeUseCase {
 
             User user = optionalUser.get();
 
-            boolean isCurrentPasswordValid = bcrypt.matches(currentPassword, user.getPassword());
+            if (nonNull(user.getPassword())) {
+                boolean isCurrentPasswordValid = bcrypt.matches(currentPassword, user.getPassword());
 
-            if (!isCurrentPasswordValid) {
-                log.warn("Password is not valid for user with id [{}]", userId);
-                throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_15);
-            }
+                if (!isCurrentPasswordValid) {
+                    log.warn("Password is not valid for user with id [{}]", userId);
+                    throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_15);
+                }
 
-            boolean isPasswordDuplicated = bcrypt.matches(newPassword, user.getPassword());
+                boolean isPasswordDuplicated = bcrypt.matches(newPassword, user.getPassword());
 
-            if (isPasswordDuplicated) {
-                log.warn("Password is duplicated for user with id [{}]", userId);
-                throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_13);
+                if (isPasswordDuplicated) {
+                    log.warn("Password is duplicated for user with id [{}]", userId);
+                    throw new BusinessViolationException(ErrorResponseCode.ECRITICUSERS_13);
+                }
             }
 
             user.setPassword(bcrypt.encode(newPassword));
