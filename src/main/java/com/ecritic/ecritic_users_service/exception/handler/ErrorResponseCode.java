@@ -22,7 +22,9 @@ public enum ErrorResponseCode {
     ECRITICUSERS_13("ECRITICUSERS-13", "Invalid password", "The new password cannot be equal to the old one"),
     ECRITICUSERS_14("ECRITICUSERS-14", "Invalid password", "Password confirmation does not match"),
     ECRITICUSERS_15("ECRITICUSERS-15", "Invalid password", "Invalid password"),
-    ECRITICUSERS_16("ECRITICUSERS-16", "Forbidden access", "Forbidden access to the requested resource");
+    ECRITICUSERS_16("ECRITICUSERS-16", "Forbidden access", "Forbidden access to the requested resource"),
+    ECRITICUSERS_17("ECRITICUSERS-17", "Internal server error", "An internal error occured while executing this operation");
+
 
     private final String code;
     private final String message;
