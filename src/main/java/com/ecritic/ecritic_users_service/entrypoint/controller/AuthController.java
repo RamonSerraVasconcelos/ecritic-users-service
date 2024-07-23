@@ -9,6 +9,8 @@ import com.ecritic.ecritic_users_service.entrypoint.dto.AuthorizationInfo;
 import com.ecritic.ecritic_users_service.entrypoint.dto.ExternalUserRequestDto;
 import com.ecritic.ecritic_users_service.exception.ResourceViolationException;
 import com.ecritic.ecritic_users_service.exception.handler.ErrorResponseCode;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +21,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private final Validator validator;
 
     private final FindUserByEmailUseCase findUserByEmailUseCase;
 
@@ -55,6 +60,11 @@ public class AuthController {
 
     @PutMapping("/users/external")
     public ResponseEntity<AuthorizationInfo> upsertExternalUser(@RequestBody ExternalUserRequestDto externalUserRequestDto) {
+        Set<ConstraintViolation<ExternalUserRequestDto>> violations = validator.validate(externalUserRequestDto);
+        if (!violations.isEmpty()) {
+            throw new ResourceViolationException(violations);
+        }
+
         User user = upsertExternalUserUseCase.execute(externalUserRequestDto.getEmail(), externalUserRequestDto.getName());
 
         return ResponseEntity.status(HttpStatus.OK).body(authorizationInfoMapper.userToAuthorizationInfo(user));

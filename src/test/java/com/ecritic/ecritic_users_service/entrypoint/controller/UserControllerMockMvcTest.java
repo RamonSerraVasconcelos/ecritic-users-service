@@ -83,7 +83,7 @@ class UserControllerMockMvcTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapperr;
+    private ObjectMapper objectMapper;
 
     @MockBean
     private CreateUserUseCase createUserUseCase;
@@ -154,7 +154,6 @@ class UserControllerMockMvcTest {
         User user = UserFixture.load();
         userRequestDto.setPassword("password");
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         when(userDtoMapper.userRequestDtoToUser(any(UserRequestDto.class))).thenReturn(user);
@@ -184,7 +183,6 @@ class UserControllerMockMvcTest {
     @ParameterizedTest
     @MethodSource("provideUserCreateData")
     void givenRequestToRegisterUserWithInvalidParameters_thenReturnBadRequest(UserRequestDto userRequestDto, String message) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -210,7 +208,6 @@ class UserControllerMockMvcTest {
         User user = UserFixture.load();
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
@@ -246,7 +243,6 @@ class UserControllerMockMvcTest {
         User user = UserFixture.load();
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
@@ -272,7 +268,6 @@ class UserControllerMockMvcTest {
     @ParameterizedTest
     @MethodSource("provideUserUpdateData")
     void givenRequestToUpdateUserWithInvalidParameters_thenReturnBadRequest(UserRequestDto userRequestDto, String message) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -372,7 +367,6 @@ class UserControllerMockMvcTest {
                 .email("jI8eU@example.com")
                 .build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         when(authorizationTokenDataMapper.map(any())).thenReturn(AuthorizationTokenDataFixture.load());
@@ -393,7 +387,6 @@ class UserControllerMockMvcTest {
                 .email("jI8eU@example.com")
                 .build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -430,7 +423,6 @@ class UserControllerMockMvcTest {
                 .email("jI8eU@example.com")
                 .build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userRequestDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -448,7 +440,6 @@ class UserControllerMockMvcTest {
     void givenRequestToResetPasswordEndpoint_thenResetPassword_andReturnNoContent() throws Exception {
         PasswordResetDto passwordResetDto = PasswordResetDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(passwordResetDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -466,7 +457,6 @@ class UserControllerMockMvcTest {
     void givenRequestToChangePasswordEndpoint_thenChangePassword_andReturnNoContent() throws Exception {
         ChangePasswordDto changePasswordDto = ChangePasswordDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(changePasswordDto);
 
         when(authorizationTokenDataMapper.map(any())).thenReturn(AuthorizationTokenDataFixture.load());
@@ -487,7 +477,6 @@ class UserControllerMockMvcTest {
     void givenRequestToChangePasswordEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
         ChangePasswordDto changePasswordDto = ChangePasswordDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(changePasswordDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -510,7 +499,6 @@ class UserControllerMockMvcTest {
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
         UserBanDto userBanDto = UserBanDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userBanDto);
 
         when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
@@ -531,7 +519,6 @@ class UserControllerMockMvcTest {
     void givenRequestToChangeUserStatusEndpoint_whenAuthorizationTokenIsNotInformed_thenReturnBadRequest() throws Exception {
         UserBanDto userBanDto = UserBanDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userBanDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -555,7 +542,6 @@ class UserControllerMockMvcTest {
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
         when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(userBanDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -581,7 +567,6 @@ class UserControllerMockMvcTest {
         AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
         AddressResponseDto addressResponseDto = AddressResponseDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(addressRequestDto);
 
         when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
@@ -609,7 +594,6 @@ class UserControllerMockMvcTest {
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
         AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(addressRequestDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -632,7 +616,6 @@ class UserControllerMockMvcTest {
     @ParameterizedTest
     @MethodSource("provideUserAddressCreateData")
     void givenRequestToCreateUserAddressEndpointWithInvalidParameters_thenReturnBadRequest(AddressRequestDto addressRequestDto, String message) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(addressRequestDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -659,7 +642,6 @@ class UserControllerMockMvcTest {
         AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
         AddressResponseDto addressResponseDto = AddressResponseDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(addressRequestDto);
 
         when(authorizationTokenDataMapper.map(any())).thenReturn(authorizationTokenData);
@@ -687,7 +669,6 @@ class UserControllerMockMvcTest {
         AuthorizationTokenData authorizationTokenData = AuthorizationTokenDataFixture.load();
         AddressRequestDto addressRequestDto = AddressRequestDtoFixture.load();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(addressRequestDto);
 
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -725,7 +706,7 @@ class UserControllerMockMvcTest {
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapperr.writeValueAsString(addressResponseDtos)));
+                .andExpect(content().json(objectMapper.writeValueAsString(addressResponseDtos)));
 
         verify(findUserAddressesUseCase).execute(any());
     }
@@ -764,7 +745,7 @@ class UserControllerMockMvcTest {
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
-                .andExpect(content().json(objectMapperr.writeValueAsString(addressResponseDto)));
+                .andExpect(content().json(objectMapper.writeValueAsString(addressResponseDto)));
 
         verify(findUserAddressUseCase).execute(any(), any());
         verify(addressDtoMapper).addressToAddressResponseDto(any());
